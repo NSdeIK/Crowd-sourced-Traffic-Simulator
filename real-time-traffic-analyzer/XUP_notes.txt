@@ -1,0 +1,244 @@
+Team number: XIL-54179
+Project name: Real-time Traffic Analyzer
+Date: 06-30-2015
+Version of uploaded archive: 1
+
+University name: University of Debrecen
+Supervisor name: István Oniga
+Supervisor e-mail: oniga.istvan@inf.unideb.hu 
+
+Participant(s): Renátó Besenczi
+Email: netid21@mailbox.unideb.hu
+
+Participant(s): Mihály Szilágyi
+Email: szimih@mailbox.unideb.hu
+
+Board used: Digilent ZYBO
+Vivado Version: Vivado 2014.4
+
+Brief description of project: 
+Real-time Traffic Analyzer is considered a fork implementation of the Robocar World Championship.
+Robocar World Championship is intended to offer a common research platform for developing urban traffic control algorithms and for investigating the relationship between smart cities and robot cars with particular attention to spread of robot cars of the near future. At the heart of this initiative is the Robocar City Emulator. It will enable researchers to test and validate their theories and models.
+More information about the system and the system plan can be found at https://github.com/nbatfai/robocar-emulator.
+The input of the Robocar City emulator consists of the measured and estimated data of road loads. We can measure this data in different ways. Besides the crowd sourcing methods (e.g. with a mobile phone aplication) an automatic way (without the need of human interaction) is plausible. The system discussed below is considered as an automatic measuring system for the input of the Robocar City Emulator.
+This project attemps to give a solution for a part of the Robocar World Championship, namely the Automated Sensor Annotations (ASA for short).
+
+Description of archive (explain directory structure, documents and source files):
+/doc
+   /datasheets
+	OV7670.pdf -> OV7670 camera datasheet
+	GPS_ A1080.pdf -> GPS datasheet	
+	DOC_SIM900_Hardware Design_V2.00.pdf -> GSM datasheet
+   design.pdf -> Vivado design picture in pdf
+   readme.txt -> This readme.txt
+   traf-analy-eng.pdf -> Project report
+
+/image
+   /mmcblk0p1
+	BOOT.bin -> compiled boot file
+	devicetree.dtb -> compiled device tree
+	uImage -> compiled uImage file
+/src
+   /traffic_analyser_Vivado_2014_4
+	Vivado 2014.4 full project
+   /ov7670_ip_core
+	OV7670 camera ip core includes our AXI capture verilog module and Mike Field's controller VHDL code
+   /devicetree
+	devicetree.dts -> raw linux device tree file with our changes
+   /protobuf
+	TrafficAnalytics.proto -> communicaton protocol format (zybo gsm -> java server) Google Protocol Buffers v3.0
+   /cpp
+	gsm.x -> GSM module controller source code
+	gps.x -> GPS data processing module source code
+	TrafficAnalytics.pb.x -> Protobuf communication format generated source code
+	video_processing.x -> opencv video processing & video capture & traffic analyser module source code
+	main.cpp -> source codes main file includes threading & other module coordination
+   /java
+	Netbeans project of simple java TCP server which processes received protobuf message from ZYBO traffic analyser module
+   /cascade
+	haarcascade_car_1.xml -> Haar Feature-based Cascade Classifier file created by http://www.cs.utah.edu/~turcsans/DUC/
+
+Instructions to build and test the project:
+
+Step 1: 
+Run Vivado 2014.04
+	source /opt/Xilinx/Vivado/2014.4/settings64.sh
+	/opt/Xilinx/Vivado/2014.4/bin/vivado &
+
+	open project: src/traffic_analyser_Vivado_2014_4/traffic_analyser_Vivado_2014_4.xpr 
+	run synthesis & implementation & generate bitstream
+	export hardware include bitstream
+
+Step 2:
+Generate uBoot.elf
+	clone Digilent uBoot git repo:
+	$ git clone -b master-next https://github.com/DigilentInc/u-boot-Digilent-Dev.git
+	$ export ARCH=arm
+	$ source /opt/Xilinx/Vivado/2014.4/settings64.sh
+	$ export CROSS_COMPILE=arm-xilinx-linux-gnueabi-
+	$ export PATH=/path-to/u-boot-Digilent-Dev/tools/:$PATH
+	$ cd u-boot-Digilent-Dev
+	Modify ($ gedit) /include/configs/zynq-zybo.h file
+		"sdboot=if mmcinfo; then " \
+					"run uenvboot; " \
+					"echo Copying Linux from SD to RAM... && " \
+					"fatload mmc 0 0x3000000 ${kernel_image} && " \
+					"fatload mmc 0 0x2A00000 ${devicetree_image} && " \			
+					"fatload mmc 0 0x2000000 ${ramdisk_image} && " \
+					"bootm 0x3000000 0x2000000 0x2A00000; " \
+				"fi\0" \
+		TO
+		"sdboot=if mmcinfo; then " \
+					"run uenvboot; " \
+					"echo Copying Linux from SD to RAM... && " \
+					"fatload mmc 0 0x3000000 ${kernel_image} && " \
+					"fatload mmc 0 0x2A00000 ${devicetree_image} && " \			
+					"bootm 0x3000000 - 0x2A00000; " \
+				"fi\0" \
+	$ make zynq_zybo_config
+	$ make
+        $ cp u-boot u-boot.elf	
+	
+Step 3:
+Generate Boot.bin
+	Open SDK with exported project file:
+	rebuild fsbl_bsp and fsbl project
+	create Zynq Boot Image include:
+		- fsbl.elf file
+		- design_1_wrapper.bit file
+		- generated u-boot.elf
+	$ cp Boot.bin path-to-our/image/mmcblk0p1/
+	
+Step 4:
+Building Digilent Linux kernel & generate uImage:
+	clone Digilent Linux git repo:
+	git clone -b master-next https://github.com/DigilentInc/Linux-Digilent-Dev.git
+	$ cd Linux-Digilent-Dev
+	$ make xilinx_zynq_defconfig
+	$ make menuconfig -> add uartlite driver, etc...
+	$ make UIMAGE_LOADADDR=0x8000 uImage
+	$ cp /arch/arm/boot/uImage path-to-our/image/mmcblk0p1/uImage
+
+Step 5:
+Generate Linux Device Tree:
+	$ cd Linux-Digilent-Dev
+	copy modified dts file: $ cp path-to-our/src/devicetree/zynq_zybo.dts /arch/arm/boot/dts/zynq_zybo.dts
+	$ make zynq-zybo.dtb
+	$ cp arch/arm/boot/dts/zynq-zybo.dtb path-to-our/image/mmcblk0p1/devicetree.dtb
+
+Step 6:
+Make SD card (8GB) partitions:
+	make 1st partition fat32 100MB-512MB size
+	make 2nd partition ext4 
+
+Step 7:
+Copy path-to-our/image/mmcblk0p1 folder files to mmcblk0/mmcblk0p1 partition
+
+Step 8:
+Get Linux file system (Linaro 12.11)
+	$ wget https://releases.linaro.org/12.11/ubuntu/precise-images/ubuntu-desktop/linaro-precise-ubuntu-desktop-20121124-560.tar.gz
+	$ tar xzvf linaro-precise-ubuntu-desktop-20121124-560.tar.gz
+	$ cd binary/boot/filesystem.dir
+	$ sudo mkdir /media/linaro
+	$ sudo mount /dev/mmcblk0p2 /media/linaro
+	$ sudo rsync -a . /media/linaro
+
+Step 9:
+Wiring ZYBO:
+	- connect OV7670 camera
+		connect VDD to ZYBO JE or JD Pmod one 3.3v pin
+		connect GND to ZYBO JE or JD Pmod one GND pin
+		connect reset to ZYBO H15 pin
+		connect pwdn to ZYBO Y17 pin
+		connect pclk to ZYBO P14 pin
+		connect vsync to ZYBO T15 pin
+		connect scl to ZYBO T14 pin
+		connect sda to ZYBO U14 pin
+		connect xclk to ZYBO V17 pin
+		connect href to ZYBO U15 pin
+		connect data0 to ZYBO T17 pin
+		connect data1 to ZYBO J16 pin
+		connect data2 to ZYBO U17 pin
+		connect data3 to ZYBO W16 pin
+		connect data4 to ZYBO V13 pin
+		connect data5 to ZYBO V12 pin
+		connect data6 to ZYBO V18 pin
+		connect data7 to ZYBO R14 pin
+	- connect GPS module
+		connect VDD to ZYBO JB Pmod one 3.3v pin
+		connect GND to ZYBO JB Pmod one GND pin
+		connect RX to ZYBO JB Pmod W20 pin
+		connect TX to ZYBO JB Pmod V20 pin
+	- connect GSM module and insert SIM card (need data communication subscription, control source configured by T-Mobile Hungary boardband network!)
+		connect VDD to ZYBO 5v (we use power source modified jumper) 
+		connect GND to ZYBO JB Pmod one GND pin
+		connect RX to ZYBO JB Pmod W19 pin
+		connect TX to ZYBO JB Pmod W18 pin
+		WARNING!
+		We use SIM900 developement bord which serial I/O port voltage level converted 3.3v I/O level.
+
+Step 10:
+Insert SD card to ZYBO, connect ethernet cable (for install only) and insert jumper to SD position. Connect USB cable and power adapter. Switch on the ZYBO board.
+On your pc: $  picocom -b 115200 /dev/ttyUSB1
+Waiting for boot Linux on ZYBO board
+
+Step 11:
+Install libs:
+	$ apt-get update
+	$ apt-get -y install libopencv-dev build-essential cmake git libgtk2.0-dev pkg-config python-dev python-numpy libjpeg-dev libpng12-dev libtiff4-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libxine-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev libqt4-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip
+
+Step 12:
+Install Opencv:
+	$ git -b 2.4 clone https://github.com/Itseez/opencv.git
+	$ cd opencv
+	$ mkdir build
+	$ cd build
+	$ cmake -D CMAKE_BUILD_TYPE=RELEASE -D WITH_FFMPEG=ON -D WITH_PNG=on -D WITH_OPENGL=ON ..
+	$ make -j $(nproc)
+	$ sudo make install
+
+Step 13:
+Install Google Protobuff:
+	$ git clone https://github.com/google/protobuf.git
+	$ cd protobuf
+	$ ./configure
+	$ make
+	$ make check
+	$ make install
+
+Step 14:
+Compile protobuf (optional) TrafficAnalytics.proto file:
+	On pc: $ protoc TrafficAnalytics.proto --java_out=protobuf/
+	On ZYBO: $ protoc TrafficAnalytics.proto --cpp_out=protobuf/ (copy ZYBO board linux)
+	
+Step 15:
+Copy "cpp" folder to ZYBO (e.g. with scp):
+	$ cd cpp
+	In gsm.h file:
+		      - add SERVER name or IP adress
+		      - add SIM PIN code
+	$ gcc -c -g -MMD -MP -MF gps.o.d -o gps.o gps.c
+	$ gcc -c -g -MMD -MP -MF gsm.o.d -o gsm.o gsm.c
+	$ g++ `pkg-config --cflags --libs protobuf` -c -g -std=c++11 -MMD -MP -MF TrafficAnalytics.pb.o.d -o TrafficAnalytics.pb.o TrafficAnalytics.pb.cc
+	$ g++ `pkg-config --cflags --libs opencv` -c -g -std=c++11 -MMD -MP -MF video_processing.o.d -o video_processing.o video_processing.cpp
+	$ g++ -lpthread -c -g -std=c++11 -MMD -MP -MF main.o.d -o main.o main.cpp
+	$ g++ -lpthread `pkg-config --cflags --libs protobuf --libs opencv` -o trafficanalytics TrafficAnalytics.pb.o gps.o gsm.o main.o video_processing.o 
+
+
+Step 16:
+Open TcpServer JAVA Netbeans project located in src/java/ folder.
+	You need Java 8 JDK and Netbeans 8 IDE.
+	Edit project when modify/regenerate protobuf message. (optional)
+	Default TCP port 2015. 
+	You will need a public IP or domain and an open TCP port. Default TCP port 2015.
+	Run the Java TcpServer application.
+   	
+Step 17:
+Run Traffic Analyser on ZYBO.
+	./trafficanalytics path-to/cascade/haarcascade_car_1.xml
+
+Step 18:
+If everything went fine, you can see the data collected by the Traffic Analyser sent from ZYBO in Netbeans TcpServer console.  
+
+Link to YouTube Video(s):
+https://www.youtube.com/watch?v=ECosPSNb8_Q

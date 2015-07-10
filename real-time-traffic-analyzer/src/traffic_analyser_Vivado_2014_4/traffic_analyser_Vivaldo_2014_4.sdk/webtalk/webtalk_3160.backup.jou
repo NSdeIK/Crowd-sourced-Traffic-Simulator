@@ -1,0 +1,10 @@
+#-----------------------------------------------------------
+# Webtalk v2014.4 (64-bit)
+# SW Build 1071353 on Tue Nov 18 16:44:35 MST 2014
+# 
+# Start of session at: Sun Jun 14 16:44:29 2015
+# Process ID: 25850
+# Log file: /home/misi/xildemo/project_1/project_1.sdk/webtalk/webtalk.log
+# Journal file: /home/misi/xildemo/project_1/project_1.sdk/webtalk/webtalk.jou
+#-----------------------------------------------------------
+source sdk_webtalk.tcl
