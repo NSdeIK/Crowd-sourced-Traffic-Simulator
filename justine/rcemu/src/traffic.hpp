@@ -78,11 +78,22 @@ enum class TrafficType: unsigned int
   NORMAL=0, ANT, ANT_RND, ANT_RERND, ANT_MRERND
 };
 
+enum class InitType: unsigned int
+{
+  NORMAL=0, DISTRIBUTION
+};
+
+
+
 class Traffic
 {
 public:
 
-  Traffic ( int size, const char * shm_segment, double catchdist, TrafficType type = TrafficType::NORMAL, int minutes = 10 )
+  Traffic ( int size,
+            const char * shm_segment,
+            double catchdist,
+            TrafficType type = TrafficType::NORMAL,
+            int minutes = 10 )
     :m_size ( size ), m_catchdist ( catchdist ), m_type ( type ), m_minutes ( minutes )
   {
 
@@ -99,11 +110,16 @@ public:
     shm_map =
       segment->find<shm_map_Type> ( "JustineMap" ).first;
 
+  }
+
+  virtual void init ( void )
+  {
+
 #ifdef DEBUG
     std::cout << "Initializing routine cars ... " << std::endl;
 #endif
 
-    if ( type != TrafficType::NORMAL )
+    if ( m_type != TrafficType::NORMAL )
       for ( shm_map_Type::iterator iter=shm_map->begin();
             iter!=shm_map->end(); ++iter )
         {
@@ -121,7 +137,7 @@ public:
         //std::unique_ptr<Car> car(std::make_unique<Car>(*this)); //14, 4.9
         //std::unique_ptr<Car> car(new Car {*this});
 
-        if ( type == TrafficType::NORMAL )
+        if ( m_type == TrafficType::NORMAL )
           {
             std::shared_ptr<Car> car ( new Car {*this} );
 
@@ -136,8 +152,6 @@ public:
             cars.push_back ( car );
 
           }
-
-
       }
 
 #ifdef DEBUG
@@ -422,7 +436,7 @@ public:
   {
     return m_time;
   }
-  
+
 protected:
 
   boost::interprocess::managed_shared_memory *segment;
@@ -432,7 +446,7 @@ protected:
   bool m_run {true};
   double m_catchdist {15.5};
 
-private:
+protected:
 
   int addCop ( CarLexer& cl );
   int addGangster ( CarLexer& cl );
@@ -457,8 +471,132 @@ private:
   std::string logfile;
 };
 
+
+class RealTraffic : public Traffic
+{
+public:
+  RealTraffic ( int size,
+                const char * shm_segment,
+                double catchdist,
+                TrafficType type = TrafficType::NORMAL,
+                InitType itype = InitType::NORMAL,
+                int minutes = 10 )
+    : Traffic ( size, shm_segment, catchdist, type, minutes ), m_itype ( itype )
+  {
+
+  }
+
+
+  osmium::unsigned_object_id_type virtual node()
+  {
+
+    double no_edges = shm_map->size();
+    double rand = (double)std::rand() / (double)RAND_MAX;
+
+    double sum = 0.0;
+    for ( shm_map_Type::iterator iter=shm_map->begin();
+          iter!=shm_map->end(); ++iter )
+      {
+
+        for ( auto noderef : iter->second.m_alist )
+          {
+            sum += 1.0/no_edges;
+            if ( sum >= rand )
+              return iter->first;
+          }
+      }
+
+    std::cout << "zavar támadt az erőben..." << std::endl;
+
+    shm_map_Type::iterator iter=shm_map->begin();
+    std::advance ( iter, std::rand() % shm_map->size() );
+
+    return iter->first;
+  }
+
+  virtual void init ( void )
+  {
+
+#ifdef DEBUG
+    std::cout << "Initializing routine cars ... " << std::endl;
+#endif
+
+    if ( m_type != TrafficType::NORMAL )
+      for ( shm_map_Type::iterator iter=shm_map->begin();
+            iter!=shm_map->end(); ++iter )
+        {
+
+          for ( auto noderef : iter->second.m_alist )
+            {
+              AntCar::alist[iter->first].push_back ( 1 );
+              AntCar::alist_evaporate[iter->first].push_back ( 1 );
+            }
+        }
+
+    if ( m_itype == InitType::DISTRIBUTION )
+      for ( shm_map_Type::iterator iter=shm_map->begin();
+            iter!=shm_map->end(); ++iter )
+        {
+
+          for ( auto noderef : iter->second.m_alist )
+            {
+              RealTraffic::alist[iter->first].push_back ( 0 );
+              RealTraffic::alist_evaporate[iter->first].push_back ( 1 );
+            }
+        }
+
+
+    for ( int i {0}; i < m_size; ++i )
+      {
+
+        //std::unique_ptr<Car> car(std::make_unique<Car>(*this)); //14, 4.9
+        //std::unique_ptr<Car> car(new Car {*this});
+
+        if ( m_type == TrafficType::NORMAL )
+          {
+            std::shared_ptr<Car> car ( new Car {*this} );
+
+            car->init();
+            cars.push_back ( car );
+          }
+        else
+          {
+            std::shared_ptr<AntCar> car ( new AntCar {*this} );
+
+            car->init();
+            cars.push_back ( car );
+
+          }
+      }
+
+#ifdef DEBUG
+    std::cout << "All routine cars initialized." <<"\n";
+#endif
+
+    boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+
+    logfile = boost::posix_time::to_simple_string ( now );
+    logFile = new std::fstream ( logfile.c_str() , std::ios_base::out );
+
+    m_cv.notify_one();
+
+    std::cout << "The traffic server is ready." << std::endl;
+
+  }
+
+  static AdjacencyList alist;
+  static AdjacencyList alist_evaporate;
+
+private:
+  InitType m_itype {InitType::NORMAL};
+
+
+};
+
+
 }
 } // justine::robocar::
+
 
 #endif // ROBOCAR_TRAFFIC_HPP
 
