@@ -490,17 +490,26 @@ public:
   osmium::unsigned_object_id_type virtual node()
   {
 
-    double no_edges = shm_map->size();
-    double rand = (double)std::rand() / (double)RAND_MAX;
+    //double no_edges = shm_map->size();
+    double no_edges = 0;
+    for ( shm_map_Type::iterator iter=shm_map->begin();
+          iter!=shm_map->end(); ++iter )
+      {
+
+        for ( auto nodeval : RealTraffic::alist[iter->first] )
+          no_edges += nodeval;
+      }
+
+    double rand = ( double ) std::rand() / ( double ) RAND_MAX;
 
     double sum = 0.0;
     for ( shm_map_Type::iterator iter=shm_map->begin();
           iter!=shm_map->end(); ++iter )
       {
 
-        for ( auto noderef : iter->second.m_alist )
+        for ( auto nodeval : RealTraffic::alist[iter->first] )
           {
-            sum += 1.0/no_edges;
+            sum += ( double ) nodeval/no_edges;
             if ( sum >= rand )
               return iter->first;
           }
@@ -521,6 +530,17 @@ public:
     std::cout << "Initializing routine cars ... " << std::endl;
 #endif
 
+    std::vector<osmium::unsigned_object_id_type> test_Kassai =
+    {
+
+      196329009, 265509164, 196329009, 196329007, 2287951366, 1510298218, 495661984, 1399572708, 267388591,
+      351133457, 312629856, 2287951408, 2287951444, 2287951465, 247994818, 1510298325, 1510298320, 196315264,
+      206257909, 1510346310, 2511493169, 206260623, 1510298127, 1510298072, 206262390, 1510334903, 2969934911,
+      267387939, 267388081, 2969934898, 247994913, 1399589410, 343564038, 2969934903, 343563426, 2784596654,
+      2784596655, 206262391, 2784599220, 1491733445, 1135542086, 1491733449, 206262392, 1510298351, 1510298265, 265509163
+    };
+
+
     if ( m_type != TrafficType::NORMAL )
       for ( shm_map_Type::iterator iter=shm_map->begin();
             iter!=shm_map->end(); ++iter )
@@ -540,8 +560,12 @@ public:
 
           for ( auto noderef : iter->second.m_alist )
             {
-              RealTraffic::alist[iter->first].push_back ( 0 );
-              RealTraffic::alist_evaporate[iter->first].push_back ( 1 );
+
+              if ( std::find ( test_Kassai.begin(), test_Kassai.end(), iter->first ) !=test_Kassai.end() )
+                RealTraffic::alist[iter->first].push_back ( 1 );
+              else
+                RealTraffic::alist[iter->first].push_back ( 0 );
+
             }
         }
 
