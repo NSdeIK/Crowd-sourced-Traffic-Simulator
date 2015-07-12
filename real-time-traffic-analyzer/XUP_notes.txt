@@ -1,12 +1,3 @@
-Team number: XIL-54179
-Project name: Real-time Traffic Analyzer
-Date: 06-30-2015
-Version of uploaded archive: 1
-
-University name: University of Debrecen
-Supervisor name: István Oniga
-Supervisor e-mail: oniga.istvan@inf.unideb.hu 
-
 Participant(s): Renátó Besenczi
 Email: netid21@mailbox.unideb.hu
 
@@ -25,19 +16,8 @@ This project attemps to give a solution for a part of the Robocar World Champion
 
 Description of archive (explain directory structure, documents and source files):
 /doc
-   /datasheets
-	OV7670.pdf -> OV7670 camera datasheet
-	GPS_ A1080.pdf -> GPS datasheet	
-	DOC_SIM900_Hardware Design_V2.00.pdf -> GSM datasheet
    design.pdf -> Vivado design picture in pdf
-   readme.txt -> This readme.txt
-   traf-analy-eng.pdf -> Project report
 
-/image
-   /mmcblk0p1
-	BOOT.bin -> compiled boot file
-	devicetree.dtb -> compiled device tree
-	uImage -> compiled uImage file
 /src
    /traffic_analyser_Vivado_2014_4
 	Vivado 2014.4 full project
@@ -47,12 +27,6 @@ Description of archive (explain directory structure, documents and source files)
 	devicetree.dts -> raw linux device tree file with our changes
    /protobuf
 	TrafficAnalytics.proto -> communicaton protocol format (zybo gsm -> java server) Google Protocol Buffers v3.0
-   /cpp
-	gsm.x -> GSM module controller source code
-	gps.x -> GPS data processing module source code
-	TrafficAnalytics.pb.x -> Protobuf communication format generated source code
-	video_processing.x -> opencv video processing & video capture & traffic analyser module source code
-	main.cpp -> source codes main file includes threading & other module coordination
    /java
 	Netbeans project of simple java TCP server which processes received protobuf message from ZYBO traffic analyser module
    /cascade
@@ -214,24 +188,10 @@ Compile protobuf (optional) TrafficAnalytics.proto file:
 Step 15:
 Copy "cpp" folder to ZYBO (e.g. with scp):
 	$ cd cpp
-	In gsm.h file:
-		      - add SERVER name or IP adress
-		      - add SIM PIN code
-	$ gcc -c -g -MMD -MP -MF gps.o.d -o gps.o gps.c
-	$ gcc -c -g -MMD -MP -MF gsm.o.d -o gsm.o gsm.c
-	$ g++ `pkg-config --cflags --libs protobuf` -c -g -std=c++11 -MMD -MP -MF TrafficAnalytics.pb.o.d -o TrafficAnalytics.pb.o TrafficAnalytics.pb.cc
-	$ g++ `pkg-config --cflags --libs opencv` -c -g -std=c++11 -MMD -MP -MF video_processing.o.d -o video_processing.o video_processing.cpp
-	$ g++ -lpthread -c -g -std=c++11 -MMD -MP -MF main.o.d -o main.o main.cpp
-	$ g++ -lpthread `pkg-config --cflags --libs protobuf --libs opencv` -o trafficanalytics TrafficAnalytics.pb.o gps.o gsm.o main.o video_processing.o 
-
 
 Step 16:
 Open TcpServer JAVA Netbeans project located in src/java/ folder.
 	You need Java 8 JDK and Netbeans 8 IDE.
-	Edit project when modify/regenerate protobuf message. (optional)
-	Default TCP port 2015. 
-	You will need a public IP or domain and an open TCP port. Default TCP port 2015.
-	Run the Java TcpServer application.
    	
 Step 17:
 Run Traffic Analyser on ZYBO.
@@ -239,6 +199,3 @@ Run Traffic Analyser on ZYBO.
 
 Step 18:
 If everything went fine, you can see the data collected by the Traffic Analyser sent from ZYBO in Netbeans TcpServer console.  
-
-Link to YouTube Video(s):
-https://www.youtube.com/watch?v=ECosPSNb8_Q
