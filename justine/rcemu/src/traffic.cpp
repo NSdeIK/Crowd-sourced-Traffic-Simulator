@@ -32,7 +32,6 @@
 #include <traffic.hpp>
 
 justine::robocar::AdjacencyList justine::robocar::RealTraffic::alist;
-justine::robocar::AdjacencyList justine::robocar::RealTraffic::alist_evaporate;
 
 int justine::robocar::Traffic::addCop ( CarLexer& cl )
 {
