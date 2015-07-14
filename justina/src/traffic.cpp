@@ -86,9 +86,10 @@ void Traffic::init_graph(const std::string& in)
 
   std::cerr << "verticies: " << boost::num_vertices(graph) << std::endl;
   std::cerr << "edges: " << boost::num_edges(graph) << std::endl;
+  std::cerr << std::endl;
 }
 
-void Traffic::init_map(QGraphicsScene* scene)
+void Traffic::init_map(QGraphicsScene* scene) const
 {
   graph_type::edge_iterator it, end;
   boost::tie(it, end) = boost::edges(graph);
@@ -117,27 +118,77 @@ void Traffic::init_traffic(const unsigned int civil, const unsigned int gangster
   for (int i = 0; i < sum; i++)
   {
     const edge_type& e = *std::next(boost::edges(graph).first, uni_dis(gen));
-    const vertex_type v = boost::source(e, graph);
-    const Location& loc = boost::get(boost::vertex_name, graph, v);
+    const vertex_type u = boost::source(e, graph);
+    const Location& loc = boost::get(boost::vertex_name, graph, u);
 
     if (i < civil)
     {
-      cars.push_back(Car(Car::Civil, 10.0, loc, e, v));
+      cars.push_back(Car(Car::Civil, 10.0, loc, e, u));
       civil_cars.push_back(&cars.back());
     }
     else if (i < civil + gangster)
     {
-      cars.push_back(Car(Car::Gangster, 20.0, loc, e, v));
+      cars.push_back(Car(Car::Gangster, 20.0, loc, e, u));
       gangster_cars.push_back(&cars.back());
     }
     else
     {
-      cars.push_back(Car(Car::Cop, 100.0, loc, e, v));
+      cars.push_back(Car(Car::Cop, 100.0, loc, e, u));
       cop_cars.push_back(&cars.back());
     }
   }
 
   std::cerr << "cars: " << cars.size() << std::endl;
+  std::cerr << std::endl;
+}
+
+void Traffic::init_traffic_real(const std::map<std::string, double>& traffic, const unsigned int gangster, const unsigned int cop)
+{
+  std::cerr << "Populating real traffic with:" << std::endl;
+
+  std::map<std::string, int> cars_per_street;
+
+  graph_type::edge_iterator it, end;
+  boost::tie(it, end) = boost::edges(graph);
+  for ( ; it != end; ++it)
+  {
+    const edge_type& e = *it;
+    std::string& street_name = boost::get(boost::edge_name, graph, e);
+
+    const auto cit = std::find_if(traffic.cbegin(), traffic.cend(),
+                                  [street_name](const std::pair<std::string, int>& pair)->bool {
+                                    return street_name == pair.first;
+                                  });
+    if (cit != traffic.cend())
+    {
+      const vertex_type u = boost::source(e, graph);
+      const vertex_type v = boost::target(e, graph);
+      const Location& a = boost::get(boost::vertex_name, graph, u);
+      const Location& b = boost::get(boost::vertex_name, graph, v);
+
+      for (int i = 0; i < (int) cit->second; i += 100)
+      {
+        const double l = (i/cit->second);
+
+        Location loc(a);
+        loc.x += (b.x - a.x)*l;
+        loc.y += (b.y - a.y)*l;
+
+        cars.push_back(Car(Car::Civil, 10.0, loc, e, u));
+        civil_cars.push_back(&cars.back());
+
+        cars_per_street[street_name]++;
+      }
+    }
+  }
+
+  for (const auto& distrib : cars_per_street)
+  {
+    std::cerr << distrib.second << " cars on " << distrib.first << std::endl;
+  }
+  std::cerr << std::endl;
+
+  init_traffic(0, gangster, cop);
 }
 
 const vertex_type Traffic::get_other_vertex_for_edge(const edge_type& edge, const vertex_type not_this_vertex)

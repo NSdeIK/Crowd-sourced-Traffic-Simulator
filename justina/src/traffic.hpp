@@ -49,8 +49,9 @@ public:
   Traffic(QObject* parent = 0);
 
   void init_graph(const std::string& in);
-  void init_map(QGraphicsScene* scene);
+  void init_map(QGraphicsScene* scene) const;
   void init_traffic(const unsigned int civil, const unsigned int gangster, const unsigned int cop);
+  void init_traffic_real(const std::map<std::string, double>& traffic, const unsigned int gangster, const unsigned int cop);
 
   void update();
 

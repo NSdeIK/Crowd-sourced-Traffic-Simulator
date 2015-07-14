@@ -49,7 +49,15 @@ void MapView::init(const std::string& in)
 {
   city.init_graph(in);
   city.init_map(&scene);
-  city.init_traffic(1000, 100, 10);
+  //city.init_traffic(1000, 100, 10);
+
+  std::map<std::string, double> traffic {
+    {"Egyetem sugárút", 317.0},
+    {"Füredi út", 559.0},
+    {"Kassai út", 789.0}
+  };
+
+  city.init_traffic_real(traffic, 100, 10);
 
   for (const Car& car : city.get_cars())
   {

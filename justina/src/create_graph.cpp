@@ -41,19 +41,28 @@ void CreateGraph::way(const osmium::Way& way)
 
     if (inserted)
     {
-      pos->second = boost::add_vertex(Location(osmium::geom::detail::lon_to_x(node_ref.lon()),
-                                               osmium::geom::detail::lat_to_y(node_ref.lat())), graph);
+      double x = osmium::geom::detail::lon_to_x(node_ref.lon());
+      double y = osmium::geom::detail::lat_to_y(node_ref.lat());
+      Location loc(x, y);
+
+      pos->second = boost::add_vertex(vertex_property(loc), graph);
     }
 
     const vertex_type v = pos->second;
 
     if (u+1)
     {
+      const char* street_name = way.get_value_by_key("name", "");
+
       const Location& a = boost::get(boost::vertex_name, graph, u);
       const Location& b = boost::get(boost::vertex_name, graph, v);
       const double length = dist(a, b);
 
-      boost::add_edge(u, v, length, graph);
+      edge_property prop;
+      boost::get_property_value(prop, boost::edge_name) = street_name;
+      boost::get_property_value(prop, boost::edge_weight) = length;
+
+      boost::add_edge(u, v, prop, graph);
     }
 
     u = v;

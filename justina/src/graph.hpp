@@ -23,14 +23,20 @@
 
 # include <boost/graph/adjacency_list.hpp>
 
+
+typedef boost::property<boost::vertex_name_t, Location> vertex_property;
+typedef boost::property<boost::edge_name_t, std::string, boost::property<boost::edge_weight_t, double> > edge_property;
+
 typedef boost::adjacency_list<
   boost::vecS,
   boost::vecS,
   boost::undirectedS,
-  boost::property<boost::vertex_name_t, Location>,
-  boost::property<boost::edge_weight_t, double>
+  vertex_property,
+  edge_property
 > graph_type;
+
 typedef graph_type::vertex_descriptor vertex_type;
 typedef graph_type::edge_descriptor edge_type;
+
 
 # endif                                                     // GRAPH_HPP
