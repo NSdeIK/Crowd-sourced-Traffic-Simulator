@@ -1,0 +1,17 @@
+Prerequisites:
+    Qt5
+    Boost
+    libosmium
+    doxygen
+
+Build:
+    mkdir build
+    cd build
+    cmake ..
+    make
+
+Run:
+    src/Mapview ../map.osm
+
+map.osm:
+    Export from: http://www.openstreetmap.org/export#map=13/47.5329/21.6423
