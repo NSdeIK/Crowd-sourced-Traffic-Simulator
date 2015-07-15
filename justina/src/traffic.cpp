@@ -45,7 +45,7 @@ public:
 
   double operator()(const vertex_type u)
   {
-    const Location& a = boost::get(boost::vertex_name, graph, u);
+    const Location a = boost::get(boost::vertex_name, graph, u);
     return dist(a, goal);
   }
 };
@@ -98,8 +98,8 @@ void Traffic::init_map(QGraphicsScene* scene) const
     const edge_type& e = *it;
     const vertex_type u = boost::source(e, graph);
     const vertex_type v = boost::target(e, graph);
-    const Location& a = boost::get(boost::vertex_name, graph, u);
-    const Location& b = boost::get(boost::vertex_name, graph, v);
+    const Location a = boost::get(boost::vertex_name, graph, u);
+    const Location b = boost::get(boost::vertex_name, graph, v);
 
     scene->addLine(a.x, -a.y, b.x, -b.y, QPen(Qt::white, 0));
   }
@@ -119,7 +119,7 @@ void Traffic::init_traffic(const unsigned int civil, const unsigned int gangster
   {
     const edge_type e = *std::next(boost::edges(graph).first, uni_dis(gen));
     const vertex_type u = boost::source(e, graph);
-    const Location& loc = boost::get(boost::vertex_name, graph, u);
+    const Location loc = boost::get(boost::vertex_name, graph, u);
 
     if (i < civil)
     {
@@ -146,10 +146,11 @@ void Traffic::init_traffic_real(const std::map<std::string, double>& traffic, co
 {
   std::cerr << "Populating real traffic with:" << std::endl;
 
-  for (const std::pair<std::string, double>& pair : traffic)
+  for (const auto& pair : traffic)
   {
     const std::string& street_name = pair.first;
-    const double dist_between_cars = (30.0/pair.second)*1000.0;
+    const double vph = pair.second;
+    const double dist_between_cars = (30.0/vph)*1000.0;
     int count = 0;
 
     graph_type::edge_iterator it, begin, end;
@@ -161,22 +162,20 @@ void Traffic::init_traffic_real(const std::map<std::string, double>& traffic, co
                       });
     if (it != end)
     {
-      const edge_type start = get_street_end(*it, boost::source(*it, graph));
-      const edge_type end = get_street_end(*it, boost::target(*it, graph));
+      edge_type edge = get_street_end(*it, boost::source(*it, graph));
 
-      edge_type edge = start;
-      vertex_type vertex = boost::source(start, graph);
-      if (!check_street_end(start, vertex))
+      vertex_type vertex = boost::source(edge, graph);
+      if (!check_street_end(edge, vertex))
       {
-        vertex = boost::target(start, graph);
+        vertex = boost::target(edge, graph);
       }
 
       double l = 0.0;
-      while (edge != end)
+      while (1)
       {
         const vertex_type u = get_other_vertex_for_edge(edge, vertex);
-        const Location& a = boost::get(boost::vertex_name, graph, vertex);
-        const Location& b = boost::get(boost::vertex_name, graph, u);
+        const Location a = boost::get(boost::vertex_name, graph, vertex);
+        const Location b = boost::get(boost::vertex_name, graph, u);
         const double road_length = dist(a, b);
 
         l += road_length;
@@ -197,16 +196,25 @@ void Traffic::init_traffic_real(const std::map<std::string, double>& traffic, co
           count++;
         }
 
-        vertex = u;
-
+        edge_type next_edge = edge;
         const auto edges = get_other_edges_for_vertex(u, edge);
         for (const edge_type& e : edges)
         {
           if (boost::get(boost::edge_name, graph, e) == street_name)
           {
-            edge = e;
+            next_edge = e;
             break;
           }
+        }
+
+        if (next_edge != edge)
+        {
+          vertex = u;
+          edge = next_edge;
+        }
+        else
+        {
+          break;
         }
       }
 
@@ -219,7 +227,7 @@ void Traffic::init_traffic_real(const std::map<std::string, double>& traffic, co
 
 bool Traffic::check_street_end(const edge_type edge, const vertex_type vertex) const
 {
-  const std::string& street_name = boost::get(boost::edge_name, graph, edge);
+  const std::string street_name = boost::get(boost::edge_name, graph, edge);
 
   const auto edges = get_other_edges_for_vertex(vertex, edge);
   for (const edge_type& e : edges)
@@ -235,7 +243,7 @@ bool Traffic::check_street_end(const edge_type edge, const vertex_type vertex) c
 
 const edge_type Traffic::get_street_end(const edge_type edge, const vertex_type vertex) const
 {
-  const std::string& street_name = boost::get(boost::edge_name, graph, edge);
+  const std::string street_name = boost::get(boost::edge_name, graph, edge);
 
   const auto edges = get_other_edges_for_vertex(vertex, edge);
   for (const edge_type& e : edges)
@@ -281,7 +289,7 @@ const std::vector<edge_type> Traffic::get_other_edges_for_vertex(const vertex_ty
 
 const edge_type Traffic::get_next_routed_edge(const vertex_type start, const vertex_type goal) const
 {
-  const Location& loc = boost::get(boost::vertex_name, graph, goal);
+  const Location loc = boost::get(boost::vertex_name, graph, goal);
 
   std::vector<vertex_type> predecessor_map(boost::num_vertices(graph));
 
@@ -300,7 +308,7 @@ const edge_type Traffic::get_next_routed_edge(const vertex_type start, const ver
 void Traffic::navigate(Car& car)
 {
   const vertex_type exit_point = get_other_vertex_for_edge(car.curr_edge, car.entry_point);
-  const Location& exit_loc = boost::get(boost::vertex_name, graph, exit_point);
+  const Location exit_loc = boost::get(boost::vertex_name, graph, exit_point);
 
   const double max_travel_dist = car.max_speed*(sleep/1000.0);
   const double remaining_road_length = dist(exit_loc, car.loc);

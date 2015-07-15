@@ -57,7 +57,7 @@ void MapView::init(const std::string& in)
     {"Kassai út", 789.0}
   };
 
-  city.init_traffic_real(traffic, 100, 10);
+  city.init_traffic_real(traffic, 0, 100);
 
   for (const Car& car : city.get_cars())
   {
