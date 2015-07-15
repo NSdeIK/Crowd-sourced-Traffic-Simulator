@@ -34,11 +34,11 @@
 
 class distance_heuristic : public boost::astar_heuristic<graph_type, double>
 {
-  graph_type& graph;
+  const graph_type& graph;
   const Location& goal;
 
 public:
-  distance_heuristic(graph_type& graph, const Location& goal)
+  distance_heuristic(const graph_type& graph, const Location& goal)
     : graph(graph),
       goal(goal)
   {}
@@ -117,7 +117,7 @@ void Traffic::init_traffic(const unsigned int civil, const unsigned int gangster
   const unsigned int sum = civil + gangster + cop;
   for (int i = 0; i < sum; i++)
   {
-    const edge_type& e = *std::next(boost::edges(graph).first, uni_dis(gen));
+    const edge_type e = *std::next(boost::edges(graph).first, uni_dis(gen));
     const vertex_type u = boost::source(e, graph);
     const Location& loc = boost::get(boost::vertex_name, graph, u);
 
@@ -146,52 +146,111 @@ void Traffic::init_traffic_real(const std::map<std::string, double>& traffic, co
 {
   std::cerr << "Populating real traffic with:" << std::endl;
 
-  std::map<std::string, int> cars_per_street;
-
-  graph_type::edge_iterator it, end;
-  boost::tie(it, end) = boost::edges(graph);
-  for ( ; it != end; ++it)
+  for (const std::pair<std::string, double>& pair : traffic)
   {
-    const edge_type& e = *it;
-    std::string& street_name = boost::get(boost::edge_name, graph, e);
+    const std::string& street_name = pair.first;
+    const double dist_between_cars = (30.0/pair.second)*1000.0;
+    int count = 0;
 
-    const auto cit = std::find_if(traffic.cbegin(), traffic.cend(),
-                                  [street_name](const std::pair<std::string, int>& pair)->bool {
-                                    return street_name == pair.first;
-                                  });
-    if (cit != traffic.cend())
+    graph_type::edge_iterator it, begin, end;
+    boost::tie(begin, end) = boost::edges(graph);
+
+    it = std::find_if(begin, end,
+                      [street_name, this](const edge_type& e)->bool {
+                        return street_name == boost::get(boost::edge_name, graph, e);
+                      });
+    if (it != end)
     {
-      const vertex_type u = boost::source(e, graph);
-      const vertex_type v = boost::target(e, graph);
-      const Location& a = boost::get(boost::vertex_name, graph, u);
-      const Location& b = boost::get(boost::vertex_name, graph, v);
+      const edge_type start = get_street_end(*it, boost::source(*it, graph));
+      const edge_type end = get_street_end(*it, boost::target(*it, graph));
 
-      for (int i = 0; i < (int) cit->second; i += 100)
+      edge_type edge = start;
+      vertex_type vertex = boost::source(start, graph);
+      if (!check_street_end(start, vertex))
       {
-        const double l = (i/cit->second);
-
-        Location loc(a);
-        loc.x += (b.x - a.x)*l;
-        loc.y += (b.y - a.y)*l;
-
-        cars.push_back(Car(Car::Civil, 10.0, loc, e, u));
-        civil_cars.push_back(&cars.back());
-
-        cars_per_street[street_name]++;
+        vertex = boost::target(start, graph);
       }
+
+      double l = 0.0;
+      while (edge != end)
+      {
+        const vertex_type u = get_other_vertex_for_edge(edge, vertex);
+        const Location& a = boost::get(boost::vertex_name, graph, vertex);
+        const Location& b = boost::get(boost::vertex_name, graph, u);
+        const double road_length = dist(a, b);
+
+        l += road_length;
+
+        double k = (road_length - (l - dist_between_cars))/road_length;
+        while (l > dist_between_cars)
+        {
+          Location loc(a);
+          loc.x += (b.x - a.x)*k;
+          loc.y += (b.y - a.y)*k;
+
+          l -= dist_between_cars;
+          k += dist_between_cars/road_length;
+
+          cars.push_back(Car(Car::Civil, 10.0, loc, edge, vertex));
+          civil_cars.push_back(&cars.back());
+
+          count++;
+        }
+
+        vertex = u;
+
+        const auto edges = get_other_edges_for_vertex(u, edge);
+        for (const edge_type& e : edges)
+        {
+          if (boost::get(boost::edge_name, graph, e) == street_name)
+          {
+            edge = e;
+            break;
+          }
+        }
+      }
+
+      std::cerr << count << " cars on " << street_name << std::endl;
     }
   }
-
-  for (const auto& distrib : cars_per_street)
-  {
-    std::cerr << distrib.second << " cars on " << distrib.first << std::endl;
-  }
-  std::cerr << std::endl;
 
   init_traffic(0, gangster, cop);
 }
 
-const vertex_type Traffic::get_other_vertex_for_edge(const edge_type& edge, const vertex_type not_this_vertex)
+bool Traffic::check_street_end(const edge_type edge, const vertex_type vertex) const
+{
+  const std::string& street_name = boost::get(boost::edge_name, graph, edge);
+
+  const auto edges = get_other_edges_for_vertex(vertex, edge);
+  for (const edge_type& e : edges)
+  {
+    if (boost::get(boost::edge_name, graph, e) == street_name)
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+const edge_type Traffic::get_street_end(const edge_type edge, const vertex_type vertex) const
+{
+  const std::string& street_name = boost::get(boost::edge_name, graph, edge);
+
+  const auto edges = get_other_edges_for_vertex(vertex, edge);
+  for (const edge_type& e : edges)
+  {
+    if (boost::get(boost::edge_name, graph, e) == street_name)
+    {
+      const vertex_type u = get_other_vertex_for_edge(e, vertex);
+      return get_street_end(e, u);
+    }
+  }
+
+  return edge;
+}
+
+const vertex_type Traffic::get_other_vertex_for_edge(const edge_type edge, const vertex_type not_this_vertex) const
 {
   vertex_type u;
   if ((u = boost::target(edge, graph)) == not_this_vertex)
@@ -202,7 +261,7 @@ const vertex_type Traffic::get_other_vertex_for_edge(const edge_type& edge, cons
   return u;
 }
 
-const std::vector<edge_type> Traffic::get_other_edges_for_vertex(const vertex_type vertex, const edge_type& not_this_edge)
+const std::vector<edge_type> Traffic::get_other_edges_for_vertex(const vertex_type vertex, const edge_type not_this_edge) const
 {
   std::vector<edge_type> edges;
 
@@ -220,7 +279,7 @@ const std::vector<edge_type> Traffic::get_other_edges_for_vertex(const vertex_ty
   return edges;
 }
 
-const edge_type Traffic::get_next_routed_edge(const vertex_type start, const vertex_type goal)
+const edge_type Traffic::get_next_routed_edge(const vertex_type start, const vertex_type goal) const
 {
   const Location& loc = boost::get(boost::vertex_name, graph, goal);
 

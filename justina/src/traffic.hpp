@@ -39,9 +39,12 @@ class Traffic : public QObject
   std::default_random_engine gen;
   const unsigned int sleep = 100;
 
-  const vertex_type get_other_vertex_for_edge(const edge_type& edge, const vertex_type not_this_vertex);
-  const std::vector<edge_type> get_other_edges_for_vertex(const vertex_type vertex, const edge_type& not_this_edge);
-  const edge_type get_next_routed_edge(const vertex_type start, const vertex_type goal);
+  const vertex_type get_other_vertex_for_edge(const edge_type edge, const vertex_type not_this_vertex) const;
+  const std::vector<edge_type> get_other_edges_for_vertex(const vertex_type vertex, const edge_type not_this_edge)  const;
+  const edge_type get_next_routed_edge(const vertex_type start, const vertex_type goal) const;
+
+  const edge_type get_street_end(const edge_type edge, const vertex_type vertex) const;
+  bool check_street_end(const edge_type edge, const vertex_type vertex) const;
 
   void navigate(Car& car);
 

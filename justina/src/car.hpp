@@ -37,7 +37,7 @@ public:
   double curr_speed = 0.0;
 
   Car(const Type type, const double max_speed, const Location& loc,
-      const edge_type& curr_edge, const vertex_type entry_point)
+      const edge_type curr_edge, const vertex_type entry_point)
     : type(type),
       max_speed(max_speed),
       loc(loc),
