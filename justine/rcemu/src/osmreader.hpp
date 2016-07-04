@@ -62,12 +62,17 @@ namespace robocar
 typedef osmium::index::map::SparseMemMap<osmium::unsigned_object_id_type, osmium::Location> OSMLocations;
 
 typedef std::vector<osmium::unsigned_object_id_type> WayNodesVect;
+
+typedef std::vector<double> ProbabilityVect;
+typedef std::pair<WayNodesVect, ProbabilityVect> WayNodesProbability;
+
 typedef std::map<std::string, WayNodesVect> WayNodesMap;
 //typedef osmium::index::map::StlMap<osmium::unsigned_object_id_type, osmium::Location> WaynodeLocations;
 typedef std::map<osmium::unsigned_object_id_type, osmium::Location> WaynodeLocations;
 typedef std::map<osmium::unsigned_object_id_type, WayNodesVect> Way2Nodes;
 
-typedef std::map<osmium::unsigned_object_id_type, WayNodesVect> AdjacencyList;
+//typedef std::map<osmium::unsigned_object_id_type, WayNodesVect> AdjacencyList;
+typedef std::map<osmium::unsigned_object_id_type, WayNodesProbability> AdjacencyList;
 typedef osmium::index::map::SparseMemMap<osmium::unsigned_object_id_type, int > Vertices;
 
 class OSMReader : public osmium::handler::Handler
@@ -88,9 +93,9 @@ public:
     try
       {
 
-#ifdef DEBUG
+//#ifdef DEBUG
         std::cout << "\n OSMReader is running... " << std::endl;
-#endif
+//#endif
 
         osmium::io::File infile ( osm_file );
         osmium::io::Reader reader ( infile, osmium::osm_entity_bits::all );
@@ -101,7 +106,7 @@ public:
         osmium::apply ( reader, node_locations, *this );
         reader.close();
 
-#ifdef DEBUG
+//#ifdef DEBUG
         std::cout << " #OSM Nodes: " << nOSM_nodes << "\n";
         std::cout << " #OSM Highways: " << nOSM_ways << "\n";
         std::cout << " #Kms (Total length of highways) = " << sum_highhway_length/1000.0 << std::endl;
@@ -135,9 +140,9 @@ public:
           {
 
             sum_vertices.insert ( busit->first );
-            sum_edges+=busit->second.size();
+            sum_edges+=busit->second.first.size();
 
-            for ( const auto &v : busit->second )
+            for ( const auto &v : busit->second.first )
               {
                 sum_vertices.insert ( v );
               }
@@ -148,7 +153,7 @@ public:
         std::cout << " #citymap vertices (deg- >= 1) = "<< alist.size() << std::endl;
         std::cout << " #onewayc = "<< onewayc<< std::endl;
 
-#endif
+//#endif
 
         m_estimator *= 8;
 
@@ -176,7 +181,7 @@ public:
 
   inline bool edge ( osmium::unsigned_object_id_type v1, osmium::unsigned_object_id_type v2 )
   {
-    return ( std::find ( alist[v1].begin(), alist[v1].end(), v2 ) != alist[v1].end() );
+    return ( std::find ( alist[v1].first.begin(), alist[v1].first.end(), v2 ) != alist[v1].first.end() );
   }
 
   void node ( osmium::Node& node )
@@ -197,6 +202,7 @@ public:
     if ( !strcmp ( highway, "footway" )
          || !strcmp ( highway, "cycleway" )
          || !strcmp ( highway, "bridleway" )
+         || !strcmp ( highway, "track" )
          || !strcmp ( highway, "steps" )
          || !strcmp ( highway, "path" )
          || !strcmp ( highway, "construction" ) )
@@ -211,6 +217,34 @@ public:
       }
 
     ++nOSM_ways;
+
+    const char* speedlimit = way.tags() ["maxspeed"];
+    
+    int speed {10};
+
+    if (speedlimit){
+      std::string speedLimit (speedlimit);
+      speed = std::stoi(speedLimit);
+    }
+    else {
+      if ( !strcmp ( highway, "motorway" ))
+        speed = 130;
+      if ( !strcmp ( highway, "trunk" ))
+        speed = 110;
+      if ( !strcmp ( highway, "residential" ))
+        speed = 50;
+      if ( !strcmp ( highway, "track" ))
+        speed = 40;
+      if ( !strcmp ( highway, "primary" ) 
+        ||  !strcmp ( highway, "secondary" ) 
+        ||  !strcmp ( highway, "tertiary" ) 
+        || !strcmp ( highway, "unclassified" ))
+        speed = 90;
+      else
+        speed = 50;
+    }
+    
+    double ratio_for_speed = ((double)speed/3.6) * .2;
 
     double way_length = osmium::geom::haversine::distance ( way.nodes() );
     sum_highhway_length += way_length;
@@ -252,11 +286,20 @@ public:
             if ( !edge ( vertex_old, vertex ) )
               {
 
-                alist[vertex_old].push_back ( vertex );
+                alist[vertex_old].first.push_back ( vertex );
+                
+                alist[vertex_old].second.push_back ( 0 );
+
+                int out_degree = alist[vertex_old].first.size();
+                
+                for (int i = 0; i < out_degree; i++){
+                  
+                  alist[vertex_old].second.at(i) = 1/(double)out_degree;
+                }
 
                 double edge_length = distance ( vertex_old, vertex );
 
-                palist[vertex_old].push_back ( edge_length / 3.0 );
+                palist[vertex_old].first.push_back ( edge_length / ratio_for_speed );
 
                 if ( edge_length>max_edge_length )
                   max_edge_length = edge_length;
@@ -277,11 +320,19 @@ public:
                 if ( !edge ( vertex, vertex_old ) )
                   {
 
-                    alist[vertex].push_back ( vertex_old );
+                    alist[vertex].first.push_back ( vertex_old );
+                    alist[vertex].second.push_back ( 0 );
+
+                    int out_degree = alist[vertex].first.size();
+                    
+                    for (int i = 0; i < out_degree; i++){
+                    
+                      alist[vertex].second.at(i) = 1/(double)out_degree;
+                    }
 
                     double edge_length = distance ( vertex_old, vertex );
 
-                    palist[vertex].push_back ( edge_length / 3.0 );
+                    palist[vertex].first.push_back ( edge_length / ratio_for_speed );
 
                     if ( edge_length>max_edge_length )
                       max_edge_length = edge_length;

@@ -168,24 +168,24 @@ public:
             v.lon = m_waynode_locations[ iter->first ].x();
             v.lat = m_waynode_locations[ iter->first ].y();
 
-            for ( WayNodesVect::iterator noderefi = iter->second.begin();
-                  noderefi!= iter->second.end(); ++noderefi )
+            for ( WayNodesVect::iterator noderefi = iter->second.first.begin();
+                  noderefi!= iter->second.first.end(); ++noderefi )
               {
 
                 v.m_alist.push_back ( *noderefi );
                 v.m_salist.push_back ( 0u );
-                v.m_palist.push_back ( palist[iter->first][std::distance ( iter->second.begin(), noderefi )]+1 );
+                v.m_palist.push_back ( palist[iter->first].first[std::distance ( iter->second.first.begin(), noderefi )]+1 );
               }
 
             map_pair_Type p ( iter->first, v );
             shm_map_n->insert ( p );
           }
 
-#ifdef DEBUG
+//#ifdef DEBUG
         std::cout << " alist.size = " << alist.size() << " (deg- >= 1)"<< std::endl;
         std::cout << " SHM/alist.size = " << shm_map_n->size() << std::endl;
-#endif
-
+//#endif
+        printAdjacencySparseMatrix(alist);
 
       }
     catch ( boost::interprocess::bad_alloc e )
@@ -234,6 +234,30 @@ public:
     m_thread.join();
     delete segment;
     delete m_remover;
+  }
+
+  void printAdjacencySparseMatrix(AdjacencyList alist){
+
+    std::fstream adjacencySparseMatrixFile ( "../adjacencysparsematrix.txt", std::ios_base::out );
+
+    for (AdjacencyList::iterator alist_iter = alist.begin(); alist_iter != alist.end(); alist_iter++){
+
+      WayNodesProbability actNodeProbabilities = alist_iter->second;
+
+      for (int i = 0; i < actNodeProbabilities.first.size(); i++){
+    
+        adjacencySparseMatrixFile << alist_iter->first;
+        adjacencySparseMatrixFile << " ";
+    
+        adjacencySparseMatrixFile << actNodeProbabilities.first.at(i);
+        adjacencySparseMatrixFile << " ";
+        adjacencySparseMatrixFile << actNodeProbabilities.second.at(i);
+        adjacencySparseMatrixFile << "\n";
+      }
+
+  }
+
+    adjacencySparseMatrixFile.close();
   }
 
   void processes ( )

@@ -126,8 +126,8 @@ public:
 
           for ( auto noderef : iter->second.m_alist )
             {
-              AntCar::alist[iter->first].push_back ( 1 );
-              AntCar::alist_evaporate[iter->first].push_back ( 1 );
+              AntCar::alist[iter->first].first.push_back ( 1 );
+              AntCar::alist_evaporate[iter->first].first.push_back ( 1 );
             }
         }
 
@@ -495,7 +495,7 @@ public:
           iter!=shm_map->end(); ++iter )
       {
 
-        for ( auto nodeval : RealTraffic::alist[iter->first] )
+        for ( auto nodeval : RealTraffic::alist[iter->first].first )
           no_edges += nodeval;
       }
 
@@ -506,7 +506,7 @@ public:
           iter!=shm_map->end(); ++iter )
       {
 
-        for ( auto nodeval : RealTraffic::alist[iter->first] )
+        for ( auto nodeval : RealTraffic::alist[iter->first].first )
           {
             sum += ( double ) nodeval/no_edges;
             if ( sum >= rand )
@@ -585,8 +585,8 @@ public:
 
           for ( auto noderef : iter->second.m_alist )
             {
-              AntCar::alist[iter->first].push_back ( 1 );
-              AntCar::alist_evaporate[iter->first].push_back ( 1 );
+              AntCar::alist[iter->first].first.push_back ( 1 );
+              AntCar::alist_evaporate[iter->first].first.push_back ( 1 );
             }
         }
 
@@ -594,7 +594,7 @@ public:
       for ( shm_map_Type::iterator iter=shm_map->begin();
             iter!=shm_map->end(); ++iter )
         for ( auto noderef : iter->second.m_alist )
-          RealTraffic::alist[iter->first].push_back ( measured ( iter->first, realtraffic ) );
+          RealTraffic::alist[iter->first].first.push_back ( measured ( iter->first, realtraffic ) );
 
     for ( int i {0}; i < m_size; ++i )
       {
