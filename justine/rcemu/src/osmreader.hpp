@@ -43,6 +43,7 @@
 #include <osmium/handler/node_locations_for_ways.hpp>
 #include <osmium/geom/haversine.hpp>
 #include <osmium/geom/coordinates.hpp>
+#include <google/protobuf/stubs/common.h>
 #include <iostream>
 #include <map>
 #include <set>
