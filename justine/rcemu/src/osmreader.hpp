@@ -93,9 +93,9 @@ public:
     try
       {
 
-//#ifdef DEBUG
+#ifdef DEBUG
         std::cout << "\n OSMReader is running... " << std::endl;
-//#endif
+#endif
 
         osmium::io::File infile ( osm_file );
         osmium::io::Reader reader ( infile, osmium::osm_entity_bits::all );
@@ -106,7 +106,7 @@ public:
         osmium::apply ( reader, node_locations, *this );
         reader.close();
 
-//#ifdef DEBUG
+#ifdef DEBUG
         std::cout << " #OSM Nodes: " << nOSM_nodes << "\n";
         std::cout << " #OSM Highways: " << nOSM_ways << "\n";
         std::cout << " #Kms (Total length of highways) = " << sum_highhway_length/1000.0 << std::endl;
@@ -153,7 +153,7 @@ public:
         std::cout << " #citymap vertices (deg- >= 1) = "<< alist.size() << std::endl;
         std::cout << " #onewayc = "<< onewayc<< std::endl;
 
-//#endif
+#endif
 
         m_estimator *= 8;
 
@@ -199,8 +199,15 @@ public:
     if ( !highway )
       return;
     // http://wiki.openstreetmap.org/wiki/Key:highway
+    // Allowed: motorway, trunk, primary, second, tertiary, unclassified, service, motorway_link, trunk_link, primary_link, 
+    // secondary_link, tertiary_link, living_street, road
+    // Not allowed: pedestrian, track, bus_guideway, raceway, footway, bridleway, steps, path, cycleway, construction, proposed
     if ( !strcmp ( highway, "footway" )
          || !strcmp ( highway, "cycleway" )
+	 || !strcmp ( highway, "pedestrian" )
+	 || !strcmp ( highway, "bus_guideway" )
+	 || !strcmp ( highway, "proposed" )
+	 || !strcmp ( highway, "raceway" )
          || !strcmp ( highway, "bridleway" )
          || !strcmp ( highway, "track" )
          || !strcmp ( highway, "steps" )
@@ -218,33 +225,38 @@ public:
 
     ++nOSM_ways;
 
-    const char* speedlimit = way.tags() ["maxspeed"];
+    const char* maxspeed = way.tags() ["maxspeed"];
     
     int speed {10};
 
-    if (speedlimit){
-      std::string speedLimit (speedlimit);
+    if (maxspeed){
+      std::string speedLimit (maxspeed);
       speed = std::stoi(speedLimit);
+      //std::cout << "Speed: " << speed << "\n";
     }
     else {
-      if ( !strcmp ( highway, "motorway" ))
+      if ( !strcmp ( highway, "motorway" )
+	||  !strcmp ( highway, "motorway_link" ))
         speed = 130;
       if ( !strcmp ( highway, "trunk" ))
         speed = 110;
-      if ( !strcmp ( highway, "residential" ))
+      if ( !strcmp ( highway, "residential" )
+	||  !strcmp ( highway, "living_street" ))
         speed = 50;
-      if ( !strcmp ( highway, "track" ))
-        speed = 40;
       if ( !strcmp ( highway, "primary" ) 
-        ||  !strcmp ( highway, "secondary" ) 
-        ||  !strcmp ( highway, "tertiary" ) 
-        || !strcmp ( highway, "unclassified" ))
+        ||  !strcmp ( highway, "primary_link" ) 
+	||  !strcmp ( highway, "secondary" )
+	||  !strcmp ( highway, "secondary_link" ) 
+        ||  !strcmp ( highway, "tertiary" )
+	||  !strcmp ( highway, "tertiary_link" ))
         speed = 90;
       else
         speed = 50;
     }
-    
+
     double ratio_for_speed = ((double)speed/3.6) * .2;
+    
+    // What if mph?
 
     double way_length = osmium::geom::haversine::distance ( way.nodes() );
     sum_highhway_length += way_length;
