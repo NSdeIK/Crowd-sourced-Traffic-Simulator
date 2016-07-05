@@ -321,6 +321,19 @@ public:
   osmium::unsigned_object_id_type alist ( osmium::unsigned_object_id_type from, int to ) const
   {
     shm_map_Type::iterator iter=shm_map->find ( from );
+
+#ifdef DEBUG
+    int listsize = iter->second.m_problist.size();
+    std::cout << "Listsize=" << listsize << "\n";
+
+    for (int i = 0; i < listsize; i++){
+      std::cout << "Message: " << iter->second.m_alist[to] << " ";
+      std::cout << iter->second.m_alist[i] << " ";
+      std::cout << iter->second.m_problist[i] << "\n";
+    }
+    std::cout << "\n";
+#endif
+
     return iter->second.m_alist[to];
   }
 

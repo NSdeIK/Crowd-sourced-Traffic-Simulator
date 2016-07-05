@@ -58,6 +58,8 @@ typedef boost::interprocess::managed_shared_memory::segment_manager segment_mana
 typedef boost::interprocess::allocator<void, segment_manager_Type> void_allocator;
 typedef boost::interprocess::allocator<unsigned int, segment_manager_Type> uint_allocator;
 typedef boost::interprocess::vector<unsigned int, uint_allocator> uint_vector;
+typedef boost::interprocess::allocator<double, segment_manager_Type> double_allocator;
+typedef boost::interprocess::vector<double, double_allocator> double_vector;
 typedef boost::interprocess::allocator<uint_vector, segment_manager_Type> uint_vector_allocator;
 
 class SharedData
@@ -68,11 +70,13 @@ public:
   uint_vector m_salist;
   uint_vector m_palist;
 
+  double_vector m_problist;
+
   int lon;
   int lat;
 
   SharedData ( const void_allocator &void_alloc )
-    :  m_alist ( void_alloc ), m_salist ( void_alloc ), m_palist ( void_alloc )
+    :  m_alist ( void_alloc ), m_salist ( void_alloc ), m_palist ( void_alloc ), m_problist( void_alloc )
   {}
 };
 
@@ -175,6 +179,13 @@ public:
                 v.m_alist.push_back ( *noderefi );
                 v.m_salist.push_back ( 0u );
                 v.m_palist.push_back ( palist[iter->first].first[std::distance ( iter->second.first.begin(), noderefi )]+1 );
+              }
+
+              for ( ProbabilityVect::iterator probabi = iter->second.second.begin();
+                  probabi!= iter->second.second.end(); ++probabi )
+              {
+
+                v.m_problist.push_back ( *probabi );
               }
 
             map_pair_Type p ( iter->first, v );
