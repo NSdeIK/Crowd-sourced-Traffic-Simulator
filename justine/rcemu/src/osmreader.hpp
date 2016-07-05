@@ -44,6 +44,7 @@
 #include <osmium/geom/haversine.hpp>
 #include <osmium/geom/coordinates.hpp>
 #include <google/protobuf/stubs/common.h>
+#include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <map>
 #include <set>
@@ -227,14 +228,22 @@ public:
 
     const char* maxspeed = way.tags() ["maxspeed"];
     
-    int speed {10};
+    int speed {50};
 
     if (maxspeed){
+      
       std::string speedLimit (maxspeed);
-      speed = std::stoi(speedLimit);
-      //std::cout << "Speed: " << speed << "\n";
-    }
-    else {
+#ifdef DEBUG
+      std::cout << "Speed: " << maxspeed << "\n";
+#endif
+      try {
+	speed = boost::lexical_cast<int>(speedLimit);
+      } catch( boost::bad_lexical_cast const& ) {
+#ifdef DEBUG
+	std::cout << "Error: input string was not valid" << std::endl;
+#endif
+      }
+    } else {
       if ( !strcmp ( highway, "motorway" )
 	||  !strcmp ( highway, "motorway_link" ))
         speed = 130;
