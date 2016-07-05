@@ -90,11 +90,11 @@ int main ( int argc, char* argv[] )
   else
     port.assign ( "10007" );
 
-  int nrcars {100};
+  int nrcars {5000};
   if ( vm.count ( "nrcars" ) )
     nrcars = vm["nrcars"].as < int > ();
 
-  int minutes {10};
+  int minutes {60};
   if ( vm.count ( "minutes" ) )
     minutes = vm["minutes"].as < int > ();
 
