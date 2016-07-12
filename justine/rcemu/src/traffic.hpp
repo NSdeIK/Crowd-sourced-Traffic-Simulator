@@ -327,7 +327,7 @@ public:
     std::cout << "Listsize=" << listsize << "\n";
 
     for (int i = 0; i < listsize; i++){
-      std::cout << "Message: " << iter->second.m_alist[to] << " ";
+      std::cout << "Message: " << from << " ";
       std::cout << iter->second.m_alist[i] << " ";
       std::cout << iter->second.m_problist[i] << "\n";
     }
