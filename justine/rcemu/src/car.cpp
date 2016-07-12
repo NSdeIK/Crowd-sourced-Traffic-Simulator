@@ -421,7 +421,7 @@ void justine::robocar::SmartCar::nextGuidedEdge ( void )
           osmium::unsigned_object_id_type next_m_to;
           osmium::unsigned_object_id_type next_m_from;
 
-          if ( std::distance ( route.begin(), i ) == route.size() )
+          if ( std::distance ( route.begin(), i ) == (int)route.size() )
             {
 
               next_m_to = 0;
@@ -431,10 +431,10 @@ void justine::robocar::SmartCar::nextGuidedEdge ( void )
           else
             {
 
-              next_m_to;
+              //next_m_to;
               osmium::unsigned_object_id_type inv = traffic.alist_inv ( to_node(), * ( i+1 ) );
 
-              if ( inv != -1 )
+              if ( (int)inv != -1 )
                 {
                   next_m_to = inv;
                 }
@@ -527,7 +527,7 @@ bool justine::robocar::SmartCar::set_route ( std::vector<unsigned int> & route )
 
       int next_m_to = traffic.alist_inv ( m_from, route[1] );
 
-      if ( next_m_to != m_to )
+      if ( next_m_to != (int)m_to )
         {
           m_to = next_m_to;
           m_step = 0;

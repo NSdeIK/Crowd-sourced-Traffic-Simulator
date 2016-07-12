@@ -405,7 +405,7 @@ public:
 #endif
 
     std::vector<NRGVertex> parents ( boost::num_vertices ( *nr_graph ) );
-    for ( int i = 0; i < boost::num_vertices ( *nr_graph ); ++i )
+    for ( int i = 0; i < (int)boost::num_vertices ( *nr_graph ); ++i )
       parents[i] = i;
 
     std::vector<int> distances ( boost::num_vertices ( *nr_graph ), ( std::numeric_limits<int>::max ) () );

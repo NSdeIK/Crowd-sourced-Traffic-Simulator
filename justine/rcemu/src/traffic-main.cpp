@@ -98,9 +98,9 @@ int main ( int argc, char* argv[] )
   if ( vm.count ( "minutes" ) )
     minutes = vm["minutes"].as < int > ();
 
-  int catchdist {15};
+  double catchdist {15};
   if ( vm.count ( "catchdist" ) )
-    catchdist = vm["catchdist"].as < int > ();
+    catchdist = vm["catchdist"].as < double > ();
 
   std::string traffict;
   if ( vm.count ( "traffict" ) )

@@ -195,8 +195,6 @@ public:
 #ifdef DEBUG
         std::cout << " alist.size = " << alist.size() << " (deg- >= 1)"<< std::endl;
         std::cout << " SHM/alist.size = " << shm_map_n->size() << std::endl;
-
-        printAdjacencySparseMatrix(alist);
 #endif
       }
     catch ( boost::interprocess::bad_alloc e )
@@ -245,30 +243,6 @@ public:
     m_thread.join();
     delete segment;
     delete m_remover;
-  }
-
-  void printAdjacencySparseMatrix(AdjacencyList alist){
-
-    std::fstream adjacencySparseMatrixFile ( "../adjacencysparsematrix.txt", std::ios_base::out );
-
-    for (AdjacencyList::iterator alist_iter = alist.begin(); alist_iter != alist.end(); alist_iter++){
-
-      WayNodesProbability actNodeProbabilities = alist_iter->second;
-
-      for (int i = 0; i < actNodeProbabilities.first.size(); i++){
-    
-        adjacencySparseMatrixFile << alist_iter->first;
-        adjacencySparseMatrixFile << " ";
-    
-        adjacencySparseMatrixFile << actNodeProbabilities.first.at(i);
-        adjacencySparseMatrixFile << " ";
-        adjacencySparseMatrixFile << actNodeProbabilities.second.at(i);
-        adjacencySparseMatrixFile << "\n";
-      }
-
-  }
-
-    adjacencySparseMatrixFile.close();
   }
 
   void processes ( )

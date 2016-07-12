@@ -448,16 +448,16 @@ protected:
   boost::interprocess::managed_shared_memory *segment;
   boost::interprocess::offset_ptr<shm_map_Type> shm_map;
 
-  int m_delay {200};
-  bool m_run {true};
+  int m_size {10000};
   double m_catchdist {15.5};
+  TrafficType m_type {TrafficType::NORMAL};
+  int m_delay {200};
 
-protected:
+  bool m_run {true};
 
   int addCop ( CarLexer& cl );
   int addGangster ( CarLexer& cl );
 
-  int m_size {10000};
   int m_time {0};
   int m_minutes {10};
   std::mutex m_mutex;
@@ -471,7 +471,6 @@ protected:
 
   std::mutex cars_mutex;
 
-  TrafficType m_type {TrafficType::NORMAL};
 
   std::fstream* logFile;
   std::string logfile;

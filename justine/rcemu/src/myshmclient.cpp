@@ -69,7 +69,7 @@ std::vector<justine::sampleclient::MyShmClient::Gangster> justine::sampleclient:
   while ( std::sscanf ( data+nn, "<OK %d %u %u %u>%n", &idd, &f, &t, &s, &n ) == 4 )
     {
       nn += n;
-      gangsters.push_back ( Gangster {idd, f, t, s} );
+      gangsters.push_back ( Gangster {idd, f, t, (int)s} );
     }
 
   std::sort ( gangsters.begin(), gangsters.end(), [this, cop] ( Gangster x, Gangster y )
@@ -233,10 +233,10 @@ void justine::sampleclient::MyShmClient::route (
   boost::system::error_code err;
 
   size_t length = std::sprintf ( data,
-                                 "<route %d %d", path.size(), id );
+                                 "<route %d %d", (int)path.size(), id );
 
   for ( auto ui: path )
-    length += std::sprintf ( data+length, " %u", ui );
+    length += std::sprintf ( data+length, " %u", (unsigned int)ui );
 
   length += std::sprintf ( data+length, ">" );
 
