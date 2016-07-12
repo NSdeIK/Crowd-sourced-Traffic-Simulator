@@ -29,9 +29,12 @@
  *
  */
 
+#include <ctime>
 #include <car.hpp>
 #include <traffic.hpp>
 #include <boost/iterator/iterator_concepts.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/discrete_distribution.hpp>
 
 justine::robocar::Car::Car (
   justine::robocar::Traffic & traffic,
@@ -277,7 +280,25 @@ void justine::robocar::Car::nextSmarterEdge ( void )
   size_t nes = traffic.nedges ( next_m_from );
   if ( !nes )
     return;
-  osmium::unsigned_object_id_type next_m_to = std::rand() % nes;
+
+  double_vector prv = traffic.getProbabilityVector(next_m_from);
+
+  boost::random::mt19937 gen;
+  boost::random::discrete_distribution<> dist(prv);
+  gen.seed(static_cast<unsigned int>(std::time(0)));
+
+  osmium::unsigned_object_id_type next_m_to = dist(gen);
+
+#ifdef DEBUG
+
+  std::cout << "Current node: " << next_m_from << "\n";
+
+  for (int i = 0; i < nes; i++)
+    std::cout << "Next_node_probabilities: " << prv.at(i) << "\n";
+
+  std::cout << "Chosen node: " << next_m_to << std::endl;
+
+#endif
 
   if ( traffic.alist ( next_m_from, next_m_to ) == m_from )
     next_m_to = ( next_m_to + 1 ) % nes;
