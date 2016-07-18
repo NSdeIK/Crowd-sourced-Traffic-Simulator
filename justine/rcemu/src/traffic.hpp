@@ -324,6 +324,12 @@ public:
     return iter->second.m_problist;
   }
 
+  double getParkingProbability ( osmium::unsigned_object_id_type from ) const
+  {
+    shm_map_Type::iterator iter=shm_map->find ( from );
+    return iter->second.parking_probability;
+  }
+
   osmium::unsigned_object_id_type alist ( osmium::unsigned_object_id_type from, int to ) const
   {
     shm_map_Type::iterator iter=shm_map->find ( from );

@@ -74,9 +74,10 @@ public:
 
   int lon;
   int lat;
+  double parking_probability;
 
   SharedData ( const void_allocator &void_alloc )
-    :  m_alist ( void_alloc ), m_salist ( void_alloc ), m_palist ( void_alloc ), m_problist( void_alloc )
+    :  m_alist ( void_alloc ), m_salist ( void_alloc ), m_palist ( void_alloc ), m_problist ( void_alloc )
   {}
 };
 
@@ -171,6 +172,7 @@ public:
             */
             v.lon = m_waynode_locations[ iter->first ].x();
             v.lat = m_waynode_locations[ iter->first ].y();
+	    v.parking_probability = 0.1;
 
             for ( WayNodesVect::iterator noderefi = iter->second.first.begin();
                   noderefi!= iter->second.first.end(); ++noderefi )

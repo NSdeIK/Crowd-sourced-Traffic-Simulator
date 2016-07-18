@@ -292,7 +292,7 @@ void justine::robocar::Car::nextSmarterEdge ( void )
 #ifdef DEBUG
 
   std::cout << "Current node: " << next_m_from << "\n";
-
+  std::cout << "Parking probability: " << traffic.getParkingProbability (next_m_from) << "\n";
   for (int i = 0; i < nes; i++)
     std::cout << "Next_node_probabilities: " << prv.at(i) << "\n";
 
