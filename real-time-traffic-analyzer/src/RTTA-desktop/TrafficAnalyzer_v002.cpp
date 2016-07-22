@@ -1,6 +1,6 @@
 /*
 * g++ TrafficAnalyzer_v002.cpp -o TrafficAnalyzer_v002 `pkg-config --cflags --libs opencv`
-* ./TrafficAnalyzer_v002 ../cascade/haarcascade_car_1.xml ../test_videos/part3.mov
+* ./TrafficAnalyzer_v002 ../test_videos/part3.mov or ./TrafficAnalyzer_v002 for webcam
 */
 
 #include "opencv2/opencv.hpp"
@@ -8,19 +8,33 @@
 using namespace cv;
 
 const int white_color = 255;
+const char* cascade_file = "haarcascade_car_1.xml";
 
 int main(int argc, char** argv){
 
-	if (argc > 3){
-		std::cout << "usage!" << std::endl;
+	if (argc > 2){
+		std::cout << "Usage: ./TrafficAnalyzer_v002 ../test_videos/part3.mov or ./TrafficAnalyzer_v002 for webcam" << std::endl;
 		return 0;
 	}
 
-    VideoCapture cap(argv[2]); //or 0 for default cam
-    if(!cap.isOpened())
-        return -1;
+    VideoCapture cap;
+    if (argc == 2)
+        cap.open(argv[1]); //or 0 for default cam
+    else
+        cap.open(1);    //Pay attention for the device ID!!! Not good this way.
 
-    CascadeClassifier cascadeClassifier (argv[1]); //or absolute or relative path to xml
+    if(!cap.isOpened()){
+        std::cout << "Can't open video" << std::endl;
+        return -1;
+    }
+
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+
+    CascadeClassifier cascadeClassifier (cascade_file);
+
+    //For test, remove later
+    VideoWriter vwr ("TestVideo.mkv", VideoWriter::fourcc('D','A','V','C'), 30, Size ( 400, 300 ), false);
 
     for(;;){
 
@@ -42,14 +56,16 @@ int main(int argc, char** argv){
 		*/
 
         //visualization
-        for(int i = 0; i < detected_objects.size(); i++)
-        	rectangle(grey, detected_objects.at(i), white_color);
+        for(int i = 0; i < (int)detected_objects.size(); i++)
+            rectangle(grey, detected_objects.at(i), white_color, 2);
 
         imshow("Traffic Analyzer v002", grey);
+
+        //Recording
+        vwr << grey;
+
         if(waitKey(30) == 'c') break;
     }
-
-    std::cout << std::endl;
 
     return 0;
 }
