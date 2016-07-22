@@ -30,6 +30,7 @@ int main(int argc, char** argv){
     cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 
     CascadeClassifier cascadeClassifier (cascade_file);
+    Rect roi_rect (500, 160, 400, 300); //the ROI on the original videostream
 
 #ifdef DEBUG
     VideoWriter vwr ("TestVideo.mkv", VideoWriter::fourcc('D','A','V','C'), 30, Size ( 400, 300 ), false);
@@ -38,8 +39,7 @@ int main(int argc, char** argv){
     for(;;){
 
         Mat frame, grey;
-        std::vector<Rect> detected_objects; //will contain detected objects
-        Rect roi_rect (500, 160, 400, 300); //the ROI on the original videostream
+        std::vector<Rect> detected_objects; //will contain detected objects in Rect
 
         cap >> frame;
 
