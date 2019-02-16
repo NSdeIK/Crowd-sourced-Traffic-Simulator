@@ -205,7 +205,7 @@ void justine::robocar::Traffic::cmd_session ( boost::asio::ip::tcp::socket clien
                   std::shared_ptr<SmartCar> c = m_smart_cars_map[cl.get_id()];
 
                   length += std::sprintf ( data+length,
-                                           "<OK %d %u %u %u>", cl.get_id(), (unsigned int)c->from(),
+                                           "<OK %d %u %u %u>", cl.get_id(), (unsigned long long)c->from(),
                                            (unsigned int)c->to_node(), (unsigned int)c->get_step() );
                 }
               else
@@ -227,7 +227,7 @@ void justine::robocar::Traffic::cmd_session ( boost::asio::ip::tcp::socket clien
                       if ( c->get_type() == CarType::GANGSTER )
                         {
                           length += std::sprintf ( data+length,
-                                                   "<OK %d %u %u %u>", cl.get_id(), (unsigned int)c->from(),
+                                                   "<OK %d %u %u %u>", cl.get_id(), (unsigned long long)c->from(),
                                                    (unsigned int)c->to_node(), (unsigned int)c->get_step() );
 
                           if ( length > network_buffer_size - 512 )
@@ -260,7 +260,7 @@ void justine::robocar::Traffic::cmd_session ( boost::asio::ip::tcp::socket clien
                   for ( auto c:m_cop_cars )
                     {
                       length += std::sprintf ( data+length,
-                                               "<OK %d %u %u %u %d>", cl.get_id(), (unsigned int)c->from(),
+                                               "<OK %d %u %u %u %d>", cl.get_id(), (unsigned long long)c->from(),
                                                (unsigned int)c->to_node(), (unsigned int)c->get_step(), c->get_num_captured_gangsters() );
 
                       if ( length > network_buffer_size - 512 )

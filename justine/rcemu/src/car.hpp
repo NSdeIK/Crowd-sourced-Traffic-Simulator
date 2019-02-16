@@ -99,7 +99,7 @@ public:
        << " "
        << get_step()
        << " "
-       << static_cast<unsigned int> ( get_type() );
+       << static_cast<unsigned long long> ( get_type() );
 
   }
 
@@ -141,7 +141,7 @@ public:
        << " "
        << get_step()
        << " "
-       << static_cast<unsigned int> ( get_type() );
+       << static_cast<unsigned long long> ( get_type() );
 
   }
 
@@ -179,7 +179,7 @@ public:
        << " "
        << get_step()
        << " "
-       << static_cast<unsigned int> ( get_type() );
+       << static_cast<unsigned long long> ( get_type() );
 
   }
 
@@ -187,16 +187,16 @@ public:
   {
     return m_guided;
   }
-  bool set_route ( std::vector<unsigned int> & route );
+  bool set_route ( std::vector<unsigned long long> & route );
   virtual void nextEdge ( void );
   virtual void nextGuidedEdge ( void );
-  bool set_fromto ( unsigned int from, unsigned int to );
+  bool set_fromto ( unsigned long long from, unsigned long long to );
 
 private:
   bool m_guided {false};
   bool m_routed {false};
 
-  std::vector<unsigned int> route;
+  std::vector<unsigned long long> route;
 
 };
 
@@ -216,7 +216,7 @@ public:
        << " "
        << get_step()
        << " "
-       << static_cast<unsigned int> ( get_type() )
+       << static_cast<unsigned long long> ( get_type() )
        << " "
        << get_num_captured_gangsters()
        << " "
