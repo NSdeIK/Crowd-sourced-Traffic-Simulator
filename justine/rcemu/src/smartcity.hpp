@@ -56,8 +56,8 @@ namespace robocar
 
 typedef boost::interprocess::managed_shared_memory::segment_manager segment_manager_Type;
 typedef boost::interprocess::allocator<void, segment_manager_Type> void_allocator;
-typedef boost::interprocess::allocator<unsigned int, segment_manager_Type> uint_allocator;
-typedef boost::interprocess::vector<unsigned int, uint_allocator> uint_vector;
+typedef boost::interprocess::allocator<unsigned long long, segment_manager_Type> uint_allocator;
+typedef boost::interprocess::vector<unsigned long long, uint_allocator> uint_vector;
 typedef boost::interprocess::allocator<double, segment_manager_Type> double_allocator;
 typedef boost::interprocess::vector<double, double_allocator> double_vector;
 typedef boost::interprocess::allocator<uint_vector, segment_manager_Type> uint_vector_allocator;
@@ -81,9 +81,9 @@ public:
   {}
 };
 
-typedef std::pair<const unsigned int, SharedData> map_pair_Type;
+typedef std::pair<const unsigned long long, SharedData> map_pair_Type;
 typedef boost::interprocess::allocator<map_pair_Type, segment_manager_Type> map_pair_Type_allocator;
-typedef boost::interprocess::map< unsigned int, SharedData, std::less<unsigned int>,
+typedef boost::interprocess::map< unsigned long long, SharedData, std::less<unsigned long long>,
         map_pair_Type_allocator> shm_map_Type;
 
 class SmartCity
@@ -155,7 +155,7 @@ public:
 
     shm_map_Type* shm_map_n =
       segment->construct<shm_map_Type>
-      ( "JustineMap" ) ( std::less<unsigned int>(), alloc_obj );
+      ( "JustineMap" ) ( std::less<unsigned long long>(), alloc_obj );
 
     try
       {

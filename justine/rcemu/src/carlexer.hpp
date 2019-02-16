@@ -91,15 +91,15 @@ public:
   {
     return m_id;
   }
-  std::vector<unsigned int> & get_route ( void )
+  std::vector<unsigned long long> & get_route ( void )
   {
     return route;
   }
-  unsigned int get_from() const
+  unsigned long long get_from() const
   {
     return from;
   }
-  unsigned int get_to() const
+  unsigned long long get_to() const
   {
     return to;
   }
@@ -111,10 +111,10 @@ private:
   char role;
   int m_errnumber {0};
   bool m_guided {false};
-  std::vector<unsigned int> route;
+  std::vector<unsigned long long> route;
   int m_id {0};
-  unsigned int from {0u};
-  unsigned int to {0u};
+  unsigned long long from {0u};
+  unsigned long long to {0u};
 
 };
 
