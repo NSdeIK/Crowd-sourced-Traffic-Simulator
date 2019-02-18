@@ -90,7 +90,7 @@ class SmartCity
 {
 public:
 
-  SmartCity ( const char * osm_file, const char * shm_segment, const char * map_file ) : SmartCity ( osm_file, shm_segment )
+  SmartCity ( const char * osm_file, const char * shm_segment, const char* kernel, const char * map_file ) : SmartCity ( osm_file, shm_segment, kernel )
   {
 
     std::fstream gpsFile ( map_file, std::ios_base::out );
@@ -104,7 +104,7 @@ public:
 
   }
 
-  SmartCity ( const char * osm_file, const char * shm_segment )
+  SmartCity ( const char * osm_file, const char * shm_segment, const char* kernel )
   {
 
     AdjacencyList alist, palist;
@@ -117,7 +117,7 @@ public:
         auto start = std::chrono::high_resolution_clock::now();
 #endif
 
-        OSMReader osm_reader ( osm_file, alist, palist,
+        OSMReader osm_reader ( osm_file, kernel, alist, palist,
                                m_waynode_locations,
                                m_busWayNodesMap,
                                m_way2nodes );

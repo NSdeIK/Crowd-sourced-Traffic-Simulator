@@ -45,6 +45,7 @@
 #include <osmium/geom/coordinates.hpp>
 #include <google/protobuf/stubs/common.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/graph/graphviz.hpp>
 #include <iostream>
 #include <map>
 #include <set>
@@ -52,6 +53,7 @@
 #include <string>
 #include <algorithm>
 #include <fstream>
+#include <stdio.h>
 
 #include <exception>
 #include <stdexcept>
@@ -60,6 +62,11 @@ namespace justine
 {
 namespace robocar
 {
+
+struct Probability {
+  double prob;
+};
+
 typedef osmium::index::map::SparseMemMap<osmium::unsigned_object_id_type, osmium::Location> OSMLocations;
 
 typedef std::vector<osmium::unsigned_object_id_type> WayNodesVect;
@@ -76,10 +83,14 @@ typedef std::map<osmium::unsigned_object_id_type, WayNodesVect> Way2Nodes;
 typedef std::map<osmium::unsigned_object_id_type, WayNodesProbability> AdjacencyList;
 typedef osmium::index::map::SparseMemMap<osmium::unsigned_object_id_type, int > Vertices;
 
+typedef std::map<osmium::unsigned_object_id_type, double> Neighborlist;
+typedef std::map<osmium::unsigned_object_id_type, Neighborlist> KernelFile;
+
 class OSMReader : public osmium::handler::Handler
 {
 public:
   OSMReader ( const char * osm_file,
+              const char * kernel,
               AdjacencyList & alist,
               AdjacencyList & palist,
               WaynodeLocations & waynode_locations,
@@ -98,6 +109,28 @@ public:
         std::cout << "\n OSMReader is running... " << std::endl;
 #endif
 
+        //Reading kernel
+
+        std::ifstream file(kernel);
+        std::string kernel_line;
+        long source_node, neighbor_node;
+        int frequency;
+        double probability, weight;
+        
+        while(std::getline(file, kernel_line)){
+          
+          std::sscanf(kernel_line.c_str(), "%ld %ld {\'sums\': %d, \'prob\': %lf, \'weight\': %lf}", &source_node, &neighbor_node, &frequency, &probability, &weight);
+
+          auto search = kfile.find(source_node);
+          if (search != kfile.end()) {
+            kfile[source_node].insert(std::make_pair(neighbor_node, probability));
+          } else {
+            std::map<osmium::unsigned_object_id_type, double> temp;
+            temp.insert(std::make_pair(neighbor_node, probability));
+            kfile.insert(std::make_pair(neighbor_node, temp));
+          }
+        }
+ 
         osmium::io::File infile ( osm_file );
         osmium::io::Reader reader ( infile, osmium::osm_entity_bits::all );
 
@@ -320,10 +353,19 @@ public:
 
 		int out_degree = alist[vertex_old].first.size();
 
-		for (int i = 0; i < out_degree; i++){
-                  alist[vertex_old].second.at(i) = 1/(double)out_degree;
-                }
-
+                //std::cout << vertex_old << " " << vertex << std::endl;
+                //std::cout << "Sanity check: " << kfile[vertex_old].at(vertex)<< std::endl;
+                Neighborlist::iterator it;
+                it = kfile[vertex_old].find(vertex);
+		            if (it != kfile[vertex_old].end())
+                  alist[vertex_old].second.at(alist[vertex_old].first.size()-1) = it->second;
+                  //std::cout << vertex_old << " " << vertex << " " << it->second << std::endl;
+                else
+                  for (int i = 0; i < out_degree; i++){
+                    alist[vertex_old].second.at(i) = 1/(double)out_degree;
+                  }
+                  //alist[vertex_old].second.at(alist[vertex_old].first.size()-1) = 1/(double)out_degree;
+    
                 if ( edge_length>max_edge_length )
                   max_edge_length = edge_length;
 
@@ -357,11 +399,20 @@ public:
                     palist[vertex].first.push_back ( edge_length / ratio_for_speed );
 
 		    int out_degree = alist[vertex].first.size();
-
-		    for (int i = 0; i < out_degree; i++){
-		      alist[vertex].second.at(i) = 1/(double)out_degree;
-		    }
-
+                    //std::cout << vertex_old << " " << vertex << std::endl;
+                    //std::cout << "Sanity check: " << kfile[vertex].at(vertex_old)<< std::endl;
+		      
+            Neighborlist::iterator it;
+            it = kfile[vertex].find(vertex_old);
+            if (it != kfile[vertex].end())
+            alist[vertex].second.at(alist[vertex].first.size()-1) = it->second;
+            //std::cout << vertex << " " << vertex_old << " " << it->second << std::endl;
+            else
+              for (int i = 0; i < out_degree; i++){
+                   alist[vertex].second.at(i) = 1/(double)out_degree;
+                  }
+            //alist[vertex].second.at(alist[vertex].first.size()-1) = 1/(double)out_degree;
+          
                     if ( edge_length>max_edge_length )
                       max_edge_length = edge_length;
 
@@ -466,6 +517,7 @@ private:
   WaynodeLocations & waynode_locations;
   WayNodesMap & busWayNodesMap;
   Way2Nodes & way2nodes;
+  KernelFile kfile;
 
 };
 

@@ -102,6 +102,7 @@ int main ( int argc, char* argv[] )
   ( "osm", boost::program_options::value< std::string > (), "OSM file name" )
   ( "city", boost::program_options::value< std::string > (), "the name of the city" )
   ( "shm", boost::program_options::value< std::string > (), "shared memory segment name" )
+  ( "kernel", boost::program_options::value< std::string > (), "Markov kernel file name" )
   ( "node2gps", boost::program_options::value< std::string > (), "node2gps file name" )
   ;
 
@@ -151,6 +152,12 @@ int main ( int argc, char* argv[] )
   else
     shm.assign ( "JustineSharedMemory" );
 
+  std::string kernel;
+  if ( vm.count ( "kernel" ) )
+    kernel.assign ( vm["kernel"].as < std::string > () );
+  else
+    kernel.assign ( "porto_prob.dot" );
+  
   // Do not remove this copyright notice!
   std::cout << "Robocar City Emulator and Robocar World Championship, City Server" << std::endl
             << "Copyright (C) 2014, 2015 Norbert Bátfai" << std::endl
@@ -163,9 +170,9 @@ int main ( int argc, char* argv[] )
     {
 
       if ( vm.count ( "node2gps" ) )
-        justine::robocar::SmartCity smartCity ( osm_input.c_str(), shm.c_str(), node2gps_output.c_str() );
+        justine::robocar::SmartCity smartCity ( osm_input.c_str(), shm.c_str(), kernel.c_str(), node2gps_output.c_str() );
       else
-        justine::robocar::SmartCity smartCity ( osm_input.c_str(), shm.c_str() );
+        justine::robocar::SmartCity smartCity ( osm_input.c_str(), shm.c_str(), kernel.c_str() );
 
       std::cout << "ready."<<  std::endl;
       for ( ;; );
