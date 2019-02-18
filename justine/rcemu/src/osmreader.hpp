@@ -45,7 +45,6 @@
 #include <osmium/geom/coordinates.hpp>
 #include <google/protobuf/stubs/common.h>
 #include <boost/lexical_cast.hpp>
-#include <boost/graph/graphviz.hpp>
 #include <iostream>
 #include <map>
 #include <set>
@@ -62,10 +61,6 @@ namespace justine
 {
 namespace robocar
 {
-
-struct Probability {
-  double prob;
-};
 
 typedef osmium::index::map::SparseMemMap<osmium::unsigned_object_id_type, osmium::Location> OSMLocations;
 
@@ -108,8 +103,6 @@ public:
 #ifdef DEBUG
         std::cout << "\n OSMReader is running... " << std::endl;
 #endif
-
-        //Reading kernel
 
         std::ifstream file(kernel);
         std::string kernel_line;
@@ -267,7 +260,7 @@ public:
       
       std::string speedLimit (maxspeed);
 #ifdef DEBUG
-      std::cout << "Speed: " << maxspeed << "\n";
+      //std::cout << "Speed: " << maxspeed << "\n";
 #endif
       try {
 	speed = boost::lexical_cast<int>(speedLimit);
@@ -351,20 +344,16 @@ public:
 
                 palist[vertex_old].first.push_back ( edge_length / ratio_for_speed );
 
-		int out_degree = alist[vertex_old].first.size();
+		            int out_degree = alist[vertex_old].first.size();
 
-                //std::cout << vertex_old << " " << vertex << std::endl;
-                //std::cout << "Sanity check: " << kfile[vertex_old].at(vertex)<< std::endl;
                 Neighborlist::iterator it;
                 it = kfile[vertex_old].find(vertex);
 		            if (it != kfile[vertex_old].end())
                   alist[vertex_old].second.at(alist[vertex_old].first.size()-1) = it->second;
-                  //std::cout << vertex_old << " " << vertex << " " << it->second << std::endl;
                 else
                   for (int i = 0; i < out_degree; i++){
                     alist[vertex_old].second.at(i) = 1/(double)out_degree;
                   }
-                  //alist[vertex_old].second.at(alist[vertex_old].first.size()-1) = 1/(double)out_degree;
     
                 if ( edge_length>max_edge_length )
                   max_edge_length = edge_length;
@@ -398,20 +387,16 @@ public:
 
                     palist[vertex].first.push_back ( edge_length / ratio_for_speed );
 
-		    int out_degree = alist[vertex].first.size();
-                    //std::cout << vertex_old << " " << vertex << std::endl;
-                    //std::cout << "Sanity check: " << kfile[vertex].at(vertex_old)<< std::endl;
+		          int out_degree = alist[vertex].first.size();
 		      
             Neighborlist::iterator it;
             it = kfile[vertex].find(vertex_old);
             if (it != kfile[vertex].end())
             alist[vertex].second.at(alist[vertex].first.size()-1) = it->second;
-            //std::cout << vertex << " " << vertex_old << " " << it->second << std::endl;
             else
               for (int i = 0; i < out_degree; i++){
                    alist[vertex].second.at(i) = 1/(double)out_degree;
                   }
-            //alist[vertex].second.at(alist[vertex].first.size()-1) = 1/(double)out_degree;
           
                     if ( edge_length>max_edge_length )
                       max_edge_length = edge_length;

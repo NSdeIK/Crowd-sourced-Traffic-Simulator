@@ -132,7 +132,7 @@ int main ( int argc, char* argv[] )
   if ( vm.count ( "osm" ) )
     osm_input.assign ( vm["osm"].as < std::string > () );
   else
-    osm_input.assign ( "../debrecen.osm" );
+    osm_input.assign ( "../porto.osm" );
 
   std::string node2gps_output;
   if ( vm.count ( "node2gps" ) )
@@ -144,7 +144,7 @@ int main ( int argc, char* argv[] )
   if ( vm.count ( "city" ) )
     city.assign ( vm["city"].as < std::string > () );
   else
-    city.assign ( "Debrecen" );
+    city.assign ( "Porto" );
 
   std::string shm;
   if ( vm.count ( "shm" ) )
@@ -156,7 +156,7 @@ int main ( int argc, char* argv[] )
   if ( vm.count ( "kernel" ) )
     kernel.assign ( vm["kernel"].as < std::string > () );
   else
-    kernel.assign ( "porto_prob.dot" );
+    kernel.assign ( "../porto_adj.edgelist" );
   
   // Do not remove this copyright notice!
   std::cout << "Robocar City Emulator and Robocar World Championship, City Server" << std::endl
