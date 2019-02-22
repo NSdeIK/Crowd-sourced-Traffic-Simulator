@@ -90,16 +90,23 @@ class SmartCity
 {
 public:
 
-  SmartCity ( const char * osm_file, const char * shm_segment, const char* kernel, const char * map_file ) : SmartCity ( osm_file, shm_segment, kernel )
+  SmartCity ( const char * osm_file, const char * shm_segment, const char* kernel, const char * map_file, int mode ) : SmartCity ( osm_file, shm_segment, kernel )
   {
 
     std::fstream gpsFile ( map_file, std::ios_base::out );
 
     for ( auto loc: m_waynode_locations )
-      gpsFile << loc.first
-              << " " << loc.second.lat()
-              << " " << loc.second.lon() << std::endl;
+    {
+        gpsFile << loc.first
+                << " " << loc.second.lat()
+                << " " << loc.second.lon();
 
+        if ( mode )
+          gpsFile <<
+                  " " << node2way ( loc.first );
+
+        gpsFile << std::endl;
+      }
     gpsFile.close ();
 
   }
@@ -120,7 +127,9 @@ public:
         OSMReader osm_reader ( osm_file, kernel, alist, palist,
                                m_waynode_locations,
                                m_busWayNodesMap,
-                               m_way2nodes );
+                               m_way2nodes,
+                               m_way2name
+                             );
         estimated_size = 20*3*osm_reader.get_estimated_memory();
 
 #ifdef DEBUG
@@ -247,6 +256,24 @@ public:
     delete m_remover;
   }
 
+std::string node2way ( osmium::unsigned_object_id_type node )
+  {
+
+    for ( auto wayit = begin ( m_way2nodes );
+          wayit != end ( m_way2nodes ); ++wayit )
+      {
+
+        WayNodesVect::iterator it = std::find ( wayit->second.begin(), wayit->second.end(), node );
+
+        if ( it != wayit->second.end() )
+          return m_way2name[wayit->first];
+
+      }
+
+    return "Unknown";
+
+  }
+
   void processes ( )
   {
     std::unique_lock<std::mutex> lk ( m_mutex );
@@ -328,6 +355,7 @@ private:
   WaynodeLocations m_waynode_locations;
   WayNodesMap m_busWayNodesMap;
   Way2Nodes m_way2nodes;
+  WayNames m_way2name;
 
   struct shm_remove
   {
