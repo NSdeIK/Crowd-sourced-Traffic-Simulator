@@ -457,7 +457,7 @@ public class CarWindow extends javax.swing.JFrame {
                 });
 
         jXMapViewer.setOverlayPainter(waypointPainter);
-        jXMapViewer.setZoom(9);
+        jXMapViewer.setZoom(5);
         jXMapViewer.setAddressLocation(debrecen);
         jXMapViewer.setCenterPosition(debrecen);
 
@@ -477,7 +477,7 @@ public class CarWindow extends javax.swing.JFrame {
         setTitle("Justine - Car Window (log player for Robocar City Emulator, Robocar World Championshin in Debrecen)");
         getContentPane().add(jXMapViewer);
 
-        setSize(800, 600);
+        setSize(1600, 900);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 

@@ -80,7 +80,7 @@ Additional usage for testing the model described in paper Markov Stochastic Mode
 4. Run the create_markov_kernel.py file located in the ../model-sources folder (you will need a python execution environment).
 
 5. Run the rcemu with the porto.osm map file and the porto_adj.edgelist kernel file. From rcemu (cd rcemu):
-a) src/smartcity --node2gps=../lmap.txt --osm=porto.osm --city=Porto --node2way=../way.txt --kernel=../../model-sources/porto_adj.edgelist
+a) src/smartcity --node2gps=../lmap.txt --osm=../porto.osm --city=Porto --node2way=../way.txt --kernel=../../model-sources/porto_adj.edgelist
 b) src/traffic --initt=DIST --minutes=10
 2. From rcwin (cd rcwin)
 e) java -jar target/site/justine-rcwin-0.0.16-jar-with-dependencies.jar ../lmap.txt
