@@ -296,7 +296,7 @@ public class CarWindow extends javax.swing.JFrame
 
         };
 
-        org.jxmapviewer.viewer.GeoPosition debrecen
+        org.jxmapviewer.viewer.GeoPosition city
             = new org.jxmapviewer.viewer.GeoPosition ( lat, lon );
 
         javax.swing.event.MouseInputListener mouseListener
@@ -361,9 +361,9 @@ public class CarWindow extends javax.swing.JFrame
         } );
 
         jXMapViewer.setOverlayPainter ( waypointPainter );
-        jXMapViewer.setZoom ( 9 );
-        jXMapViewer.setAddressLocation ( debrecen );
-        jXMapViewer.setCenterPosition ( debrecen );
+        jXMapViewer.setZoom ( 4 );
+        jXMapViewer.setAddressLocation ( city );
+        jXMapViewer.setCenterPosition ( city );
 
         jXMapViewer.addKeyListener ( new java.awt.event.KeyAdapter() {
             int index = 0;
@@ -380,11 +380,12 @@ public class CarWindow extends javax.swing.JFrame
 
         setTitle ( "Justine - Car Window (log player for Robocar City Emulator, Robocar World Championshin in Debrecen)" );
         getContentPane().add ( jXMapViewer );
-        setSize ( 800, 600 );
+        //setSize ( 1920, 1080 );
+        setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation ( javax.swing.JFrame.EXIT_ON_CLOSE );
 
         new javax.swing.Timer (
-            200, paintTimer ).start();
+            0, paintTimer ).start();
     }
 
     public static void readMap ( java.util.Map<Long, Loc> lmap, String name )
@@ -433,7 +434,7 @@ public class CarWindow extends javax.swing.JFrame
 
             javax.swing.SwingUtilities.invokeLater ( new Runnable() {
                 public void run() {
-                    new CarWindow ( 47.5467, 21.6389, lmap, null ).setVisible ( true );
+                    new CarWindow ( 41.150675, -8.611223, lmap, null ).setVisible ( true );
                 }
             } );
 
@@ -445,7 +446,7 @@ public class CarWindow extends javax.swing.JFrame
 
             javax.swing.SwingUtilities.invokeLater ( new Runnable() {
                 public void run() {
-                    new CarWindow ( 47.5467, 21.6389, lmap, logfile ).setVisible ( true );
+                    new CarWindow ( 41.150675, -8.611223, lmap, logfile ).setVisible ( true );
                 }
             } );
 

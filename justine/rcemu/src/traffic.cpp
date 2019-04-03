@@ -84,7 +84,7 @@ int justine::robocar::Traffic::addGangster ( CarLexer& cl )
 
 void justine::robocar::Traffic::cmd_session ( boost::asio::ip::tcp::socket client_socket )
 {
-  const int network_buffer_size = 524288;
+  const int network_buffer_size = 5242880;
   char data[network_buffer_size]; // TODO buffered write...
 
   try
