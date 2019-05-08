@@ -25,8 +25,5 @@
         └── java
 
 
-nbatfai@orchmach:~/ROBOCAR/robocar-emulator/justine/rcstat$ mvn clean
-compile package site assembly:assembly
-nbatfai@orchmach:~/ROBOCAR/robocar-emulator/justine/rcstat$ java -jar
-target/site/justine-car-window-0.0.10-jar-with-dependencies.jar way.txt
-2015-Jul-12\ 17\:56\:49
+$ mvn clean compile package site assembly:assembly
+$ java -jar target/site/justine-car-window-0.0.10-jar-with-dependencies.jar way.txt 2015-Jul-12\ 17\:56\:49

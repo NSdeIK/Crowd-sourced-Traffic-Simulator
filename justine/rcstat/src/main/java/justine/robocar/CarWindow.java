@@ -120,6 +120,7 @@ public class CarWindow extends javax.swing.JFrame
     java.io.File tfile = null;
     java.util.Random rnd = new java.util.Random();
     java.util.Scanner scan = null;
+    java.io.BufferedWriter writer;
 
     javax.swing.Action paintTimer = new javax.swing.AbstractAction()
     {
@@ -203,12 +204,13 @@ public class CarWindow extends javax.swing.JFrame
                     }
 
 
-                    if (time % 300 == 0 || time == 1) // Print distribution every minute
-                        System.out.println ( java.util.Arrays.toString ( whist.entrySet().toArray() ) );
-
+                    if (time % 300 == 0 || time == 1){ // Print distribution every minute
+                        writer.write ( java.util.Arrays.toString ( whist.entrySet().toArray() ) + '\n' );
+                    }
 
                     if ( time >= minutes * 60 * 1000 / 200 ) {
                         scan = null;
+                        writer.close();
                     }
 
                     StringBuilder sb = new StringBuilder();
@@ -225,7 +227,6 @@ public class CarWindow extends javax.swing.JFrame
                     sb.append ( ":" );
                     sb.append ( 2 * time );
                     sb.append ( "|" );
-                    //sb.append(" Justine - Car Window (log player for Robocar City Emulator, Robocar World Championshin in Debrecen)");
                     sb.append ( java.util.Arrays.toString ( cops.entrySet().toArray() ) );
 
                     setTitle ( sb.toString() );
@@ -237,18 +238,22 @@ public class CarWindow extends javax.swing.JFrame
                 } catch ( java.util.InputMismatchException imE ) {
 
                     java.util.logging.Logger.getLogger (
-                        CarWindow.class.getName() ).log ( java.util.logging.Level.SEVERE, "Hibás bemenet...", imE );
+                        CarWindow.class.getName() ).log ( java.util.logging.Level.SEVERE, "Input error...", imE );
 
                 } catch ( java.util.NoSuchElementException e ) {
 
                     java.util.logging.Logger.getLogger (
-                        CarWindow.class.getName() ).log ( java.util.logging.Level.SEVERE, "Tervezett leállás: input végét kapott el a kivételkezelő." );
+                        CarWindow.class.getName() ).log ( java.util.logging.Level.SEVERE, "Input end." );
 
                     CarWindow.this.dispatchEvent (
                         new java.awt.event.WindowEvent ( CarWindow.this,
                                                          java.awt.event.WindowEvent.WINDOW_CLOSING ) );
-                }
+                } catch ( java.io.IOException ioE ) {
 
+                    java.util.logging.Logger.getLogger (
+                        CarWindow.class.getName() ).log ( java.util.logging.Level.SEVERE, "File write problem...", ioE );
+
+                }
             }
 
         }
@@ -267,10 +272,20 @@ public class CarWindow extends javax.swing.JFrame
             } else {
                 this.scan = new java.util.Scanner ( System.in );
             }
+
+            writer = new java.io.BufferedWriter(new java.io.FileWriter("1min_file.txt"));
+
+
         } catch ( java.io.FileNotFoundException e ) {
             scan = null;
             java.util.logging.Logger.getLogger (
                 CarWindow.class.getName() ).log ( java.util.logging.Level.SEVERE, null, e );
+        
+        } catch ( java.io.IOException ioE ) {
+
+            java.util.logging.Logger.getLogger (
+                CarWindow.class.getName() ).log ( java.util.logging.Level.SEVERE, "File write problem...", ioE );
+
         }
 
         do {
@@ -417,7 +432,7 @@ public class CarWindow extends javax.swing.JFrame
 
             java.util.logging.Logger.getLogger (
                 CarWindow.class
-                .getName() ).log ( java.util.logging.Level.SEVERE, "hibás noderef2GPS leképezés", e );
+                .getName() ).log ( java.util.logging.Level.SEVERE, "noderef2GPS problem", e );
 
         }
 
@@ -451,11 +466,7 @@ public class CarWindow extends javax.swing.JFrame
             } );
 
         } else {
-
-            System.out.println ( "To use as a logplayer:\njava -jar target/justineroadwindow-0.0.1-jar-with-dependencies.jar lmap.txt traffic.txt" );
-            System.out.println ( "       as an on-line player:\nsrc/traffic 10007|java -jar ../justine-car-window-0.0.1-jar-with-dependencies.jar lmap.txt - DEPRECATED" );
+            System.out.println ( "To use as a logplayer:\njava -jar target/site/justine-car-window-0.0.10-jar-with-dependencies.jar way.txt logfile.txt" );
         }
-
     }
-
 }

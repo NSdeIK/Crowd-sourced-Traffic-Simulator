@@ -111,12 +111,27 @@ public:
         std::ifstream file(kernel);
         std::string kernel_line;
         long source_node, neighbor_node;
-        int frequency;
-        double probability, weight;
+        double frequency;
+        double probability, prob_uncorr, prob_corr;
         
         while(std::getline(file, kernel_line)){
+
+          std::sscanf(kernel_line.c_str(), 
+            "%ld %ld {\'sums\': %lf, \'prob\': %lf, \'prob_corr\': %lf}",
+            &source_node, &neighbor_node, &frequency, &prob_uncorr, &prob_corr);
           
-          std::sscanf(kernel_line.c_str(), "%ld %ld {\'sums\': %d, \'prob\': %lf, \'weight\': %lf}", &source_node, &neighbor_node, &frequency, &probability, &weight);
+          if (prob_corr <= 1 && prob_corr >= 0){
+            probability = prob_corr;
+            #ifdef DEBUG
+              std::cout << " Corrected OK: " << prob_corr << "\n";
+            #endif
+          } else {
+            probability = prob_uncorr;
+            #ifdef DEBUG
+              std::cout << " Corrected not OK! prob_corr " << prob_corr 
+                << " prob_uncorr " << prob_uncorr << "\n";
+            #endif
+          }
 
           auto search = kfile.find(source_node);
           if (search != kfile.end()) {
