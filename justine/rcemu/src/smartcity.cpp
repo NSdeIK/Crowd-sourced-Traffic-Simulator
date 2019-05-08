@@ -145,7 +145,7 @@ int main ( int argc, char* argv[] )
   if ( vm.count ( "node2way" ) )
     node2way_output.assign ( vm["node2way"].as < std::string > () );
   else
-    node2way_output.assign ( "../lmap.txt" );
+    node2way_output.assign ( "../way.txt" );
 
   std::string city;
   if ( vm.count ( "city" ) )
@@ -176,10 +176,8 @@ int main ( int argc, char* argv[] )
   try
     {
 
-      if ( vm.count ( "node2gps" ) )
-        justine::robocar::SmartCity smartCity ( osm_input.c_str(), shm.c_str(), kernel.c_str(), node2gps_output.c_str(), 0 );
-      else if ( vm.count ( "node2way" ) )
-        justine::robocar::SmartCity smartCity ( osm_input.c_str(), shm.c_str(), kernel.c_str(), node2way_output.c_str(), 1 );
+      if ( vm.count ( "node2gps" ) || vm.count ( "node2way" ) )
+        justine::robocar::SmartCity smartCity ( osm_input.c_str(), shm.c_str(), kernel.c_str(), node2gps_output.c_str(), node2way_output.c_str() );
       else
         justine::robocar::SmartCity smartCity ( osm_input.c_str(), shm.c_str(), kernel.c_str() );
 

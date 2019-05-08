@@ -90,10 +90,11 @@ class SmartCity
 {
 public:
 
-  SmartCity ( const char * osm_file, const char * shm_segment, const char* kernel, const char * map_file, int mode ) : SmartCity ( osm_file, shm_segment, kernel )
+  SmartCity ( const char * osm_file, const char * shm_segment, const char* kernel, const char * map_file, const char * way_file ) : SmartCity ( osm_file, shm_segment, kernel )
   {
 
     std::fstream gpsFile ( map_file, std::ios_base::out );
+    std::fstream wayFile ( way_file, std::ios_base::out );
 
     for ( auto loc: m_waynode_locations )
     {
@@ -101,13 +102,17 @@ public:
                 << " " << loc.second.lat()
                 << " " << loc.second.lon();
 
-        if ( mode )
-          gpsFile <<
-                  " " << node2way ( loc.first );
+        wayFile << loc.first
+                << " " << loc.second.lat()
+                << " " << loc.second.lon()
+                << " " << node2way ( loc.first );
 
         gpsFile << std::endl;
+        wayFile << std::endl;
       }
+      
     gpsFile.close ();
+    wayFile.close ();
 
   }
 
