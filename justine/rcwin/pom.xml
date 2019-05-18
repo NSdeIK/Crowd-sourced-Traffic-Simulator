@@ -113,7 +113,7 @@
                     <dependencyLocationsEnabled>true</dependencyLocationsEnabled>
                 </configuration>
             </plugin>
-            <!-- reports -->
+            <!-- reports
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
@@ -232,7 +232,8 @@
                         </plugin>                        
                     </reportPlugins>
                 </configuration>
-            </plugin>                        
+            </plugin>      
+             -->                  
         </plugins>
     </build>     
 </project>
