@@ -106,8 +106,6 @@ for i in range(0,vlen):
 
 time.sleep(1)
 
-#print("Saving to files....")
-
 print G.edge_properties
 idprop = G.vertex_properties[("vertex_name")]
 probcorrprop = G.edge_properties[("prob_corr")]
