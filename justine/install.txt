@@ -5,12 +5,11 @@ Prerequisites
 ====================================
 1. Install required libraries:
 
-sudo apt-add-repository ppa:webupd8team/java
-sudo apt-get update
+sudo apt-get update && sudo apt-get upgrade
 
-sudo apt-get install gcc git autoconf autotools-dev libtool protobuf-compiler libprotobuf-dev libprotozero-dev g++ libboost-all-dev flex libexpat1-dev zlib1g-dev libbz2-dev libpthread-workqueue-dev libsparsehash-dev libgdal-dev libgeos++-dev libproj-dev doxygen graphviz xmlstarlet cmake oracle-java8-installer maven
+sudo apt-get install gcc git autoconf autotools-dev libtool protobuf-compiler libprotobuf-dev libprotozero-dev g++ libboost-all-dev flex libexpat1-dev zlib1g-dev libbz2-dev libpthread-workqueue-dev libsparsehash-dev libgdal-dev libgeos++-dev libproj-dev doxygen graphviz xmlstarlet cmake default-jdk maven python python-pip littler
 
-export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 
 2. Install OSM-library:
 git clone https://github.com/scrosby/OSM-binary.git
@@ -54,7 +53,7 @@ mvn clean compile package site assembly:assembly
 Run in separate terminals
 ====================================
 1. From rcemu (cd rcemu)
-a) src/smartcity --node2gps=../lmap.txt
+a) src/smartcity --node2gps=../lmap.txt --node2way=../way.txt
 b) src/traffic
 c) (sleep 1; echo "<init Norbi 100 g>"; sleep 1)|telnet localhost 10007
 d) src/samplemyshmclient --team=Police
@@ -63,29 +62,42 @@ e) java -jar target/site/justine-rcwin-0.0.16-jar-with-dependencies.jar ../lmap.
 
 Run replays (optional)
 ====================================
-Make rclog project
-cd rclog
-mvn clean compile package site assembly:assembly
-java -jar target/site/justine-car-window-0.0.10-jar-with-dependencies.jar ../lmap.txt ../rcemu/2018-Dec-04\ 20\:13\:15
-(2nd argument is the logfile from previous a run)
+From the rcstat folder:
+a) mvn clean compile package site assembly:assembly
+b) java -jar target/site/justine-car-window-0.0.10-jar-with-dependencies.jar ../way.txt ../rcemu/2018-Dec-04\ 20\:13\:15
+where ../rcemu/2018-Dec-04\ 20\:13\:15 is the logfile of the last simulation and 1min_file.txt will contain the frequency of cars per streets measured in every minute of the simulation.
 
 ====================================
 Additional usage for testing the model described in paper Markov Stochastic Models for Analyzing Traffic Flow.
 ====================================
 
-1. Download the dataset from https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i/data and save it to the ../model-sources folder as pkdd15-subset.csv.
-2. Download the map of Porto from OpenStreetMap with the coordinates W8.6518, W8.5771, N41.1129, N41.1756 and save it to the ../model-sources folder as porto.osm.
+1. Preprocessing of the dataset:
+a) Download the dataset from https://www.kaggle.com/c/pkdd-15-predict-taxi-service-trajectory-i/data, extract and copy train.csv to the model-sources/Preprocessing folder.
+b) Execute the following in the model-sources/Preprocessing folder: 
+b1) Rscript pkdd-15-filter1.R train.csv
+b2) Rscript pkdd-15-filter2B.R
+b3) Rscript pkdd-15-filter3.R
+2. Create Markov kernel:
+a) Download the map of Porto from OpenStreetMap with the coordinates W8.6518, W8.5771, N41.1129, N41.1756 and save it to the ../model-sources/Markov kernel folder as porto.osm.
+b) Copy the pkdd-15-subset-all.csv file to the Markov kernel folder.
+c) Execute the following from the Markov kernel folder:
+c1) python make_graph_from_osm.py porto.osm pkdd-15-subset-all.csv
+c2) python make_corrected_graph_with_edge.py porto_prob_v2_connected.dot corrected_kernel
 
-3. Run filter_dataset.R code located in the ../model-sources folder (you will need R execution environment).
-4. Run the create_markov_kernel.py file located in the ../model-sources folder (you will need a python execution environment).
-
-5. Run the rcemu with the porto.osm map file and the porto_adj.edgelist kernel file. From rcemu (cd rcemu):
-a) src/smartcity --node2gps=../lmap.txt --osm=../porto.osm --city=Porto --node2way=../way.txt --kernel=../../model-sources/corrected.edgelist
+3. Run the rcemu with the porto.osm map file and the corrected_kernel.edgelist kernel file. From rcemu (cd rcemu):
+a) src/smartcity --node2gps=../lmap.txt --osm=../porto.osm --city=Porto --node2way=../way.txt --kernel=../../model-sources/Markov \kernel/corrected_kernel.edgelist
 b) src/traffic --initt=DIST --minutes=10
 2. From rcwin (cd rcwin)
 e) java -jar target/site/justine-rcwin-0.0.16-jar-with-dependencies.jar ../lmap.txt
 
-6. After the simulation over from the rcstat folder:
+4. After the simulation over from the rcstat folder:
 a) mvn clean compile package site assembly:assembly
 b) java -jar target/site/justine-car-window-0.0.10-jar-with-dependencies.jar ../way.txt ../rcemu/2018-Dec-04\ 20\:13\:15
 where ../rcemu/2018-Dec-04\ 20\:13\:15 is the logfile of the last simulation and 1min_file.txt will contain the frequency of cars per streets measured in every minute of the simulation.
+
+5. Statistical analysis:
+a) Copy 1min_file.txt to the model-sources/Statistics folder.
+b) Execute the following in the model-sources/Statistics:
+b1) python calculate_street.py ../Markov\ kernel/corrected_kernel.graphml ../../justine/porto.osm
+b2) python chisq_test.py 1min_file.txt 5000
+where 5000 is the number of cars in the simulation.
