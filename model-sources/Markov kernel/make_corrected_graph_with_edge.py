@@ -39,12 +39,6 @@ for edge in G.edges():
 
 A = gt.adjacency(G)
 
-with open('log.txt', 'w') as file_w:
-	file_w.write("A= (4)\n")
-	file_w.write(str(A.todense().transpose()))
-	file_w.write("\n")
-
-
 print("Laplacian...")
 
 L = gt.laplacian(G, deg='total', normalized=False, weight=None, index=None)
