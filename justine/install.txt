@@ -11,6 +11,15 @@ sudo apt-get install gcc git autoconf autotools-dev libtool protobuf-compiler li
 
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 
+Install R packages (in R interpreter):
+install.packages("data.table", dependencies=TRUE)
+install.packages("lubridate", dependencies=TRUE)
+
+Install python packages:
+sudo pip install osmium pandas pydot networkx
+
+Install graph-tool: https://git.skewed.de/count0/graph-tool/wikis/installation-instructions#debian-ubuntu
+
 2. Install OSM-library:
 git clone https://github.com/scrosby/OSM-binary.git
 cd OSM-binary/

@@ -121,14 +121,14 @@ for e in G.edges():
     probcorr = probcorrprop[e]
 
     if(probcorr == ""):
-		e_pi[e] = 0.0
+		e_pi[e] = str(0.0)
 		continue
     
     prob = float(probcorr)
     if(float(probcorr) > 1.0 or float(probcorr) < 0.0):
         prob = 1.0/e.source().out_degree()
 
-    e_pi[e] = pi[0,int(e.source())] * prob
+    e_pi[e] = str(pi[0,int(e.source())] * prob)
 
 fname = output_name + str(".graphml")
 G.save(fname)

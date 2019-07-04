@@ -23,7 +23,6 @@ G = nx.DiGraph()
 manager = Manager()
 trajectories = manager.list()
 #trajectories = list()
-f = open("prob.txt","w")
 
 class WayNodeHandler(osmium.SimpleHandler):
 
@@ -115,17 +114,6 @@ def matching_thread(coordinates):
 		return
 
 lock = multiprocessing.Lock()
-
-def sum_and_write(row, index):
-	r = row[row > 0]
-	s = r.div(r.sum())
-	sr = str(index+":{")
-	for i,v in s.items():
-		sr+=str("["+str(i)+":"+str(v)+"]")
-	sr += "}\n"
-	with lock:
-		f.write(sr)
-	return
 
 if __name__ == '__main__':
 	
