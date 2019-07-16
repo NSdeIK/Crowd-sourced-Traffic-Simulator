@@ -1,7 +1,6 @@
 import numpy as np;
 import graph_tool.all as gt
-import scipy as SP
-import matplotlib.pyplot as plt
+from scipy.stats import chisquare
 
 #G is a simple road network in Example 2 (see Figure 2)
 G = gt.Graph(directed=True)
@@ -52,8 +51,6 @@ with open('log.txt', 'ab') as file_w:
 N = np.array([[0,250,0,0,0], [450,0,200,150,0], [0,0,0,450,0], 
                [0,200,0,0,300], [0,350,0,0,0]]);  # 2-dimensional frequencies (75)
 
-print(N.shape)
-
 P_uncorr = np.array([[0,1,0,0,0], [0.5625,0,0.25,0.1875,0], [0,0,0,1,0], 
                [0,0.4,0,0,0.6], [0,1,0,0,0]]);	#2-dimensional probabilities (uncorrected)
 
@@ -63,7 +60,6 @@ with open('log.txt', 'ab') as file_w:
 	file_w.write("\n")
 
 diff = np.transpose(np.array([[-200,0,250,-100,50]])); # s-e
-print(diff.shape)
 
 with open('log.txt', 'ab') as file_w:
 	file_w.write("diff=\n")
@@ -115,4 +111,54 @@ P = np.transpose(np.divide(np.transpose(Qdist),pi));
 with open('log.txt', 'ab') as file_w:
 	file_w.write("P=\n")
 	file_w.write(str(P))
+	file_w.write("\n")
+
+stationary = []
+for i in range(Qdist.size):
+	if Qdist.item(i) != 0:
+		stationary.append(Qdist.item(i))
+
+with open('log.txt', 'ab') as file_w:
+	file_w.write("Stationary distribution on edges=\n")
+	file_w.write(str(stationary))
+	file_w.write("\n")
+
+measurement_a = [4,4,4,2,4,2,4,4]
+
+with open('log.txt', 'ab') as file_w:
+	file_w.write("measurement_a=\n")
+	file_w.write(str(measurement_a))
+	file_w.write("\n")
+
+norm_a = [float(i)/sum(measurement_a) for i in measurement_a]
+
+with open('log.txt', 'ab') as file_w:
+	file_w.write("norm_a=\n")
+	file_w.write(str(norm_a))
+	file_w.write("\n")
+
+measurement_b = [6,12,1,14,51,22,12,17]
+
+with open('log.txt', 'ab') as file_w:
+	file_w.write("measurement_b=\n")
+	file_w.write(str(measurement_b))
+	file_w.write("\n")
+
+norm_b = [float(i)/sum(measurement_b) for i in measurement_b]
+
+with open('log.txt', 'ab') as file_w:
+	file_w.write("norm_b=\n")
+	file_w.write(str(norm_b))
+	file_w.write("\n")
+
+chisq_a, p_a = chisquare(norm_a, f_exp=stationary)
+
+with open('log.txt', 'ab') as file_w:
+	file_w.write("Statistics for norm_a: " + str(chisq_a) + " " + str(p_a))	
+	file_w.write("\n")
+
+chisq_b, p_b = chisquare(norm_b, f_exp=stationary)
+
+with open('log.txt', 'ab') as file_w:
+	file_w.write("Statistics for norm_b: " + str(chisq_b) + " " + str(p_b))
 	file_w.write("\n")
