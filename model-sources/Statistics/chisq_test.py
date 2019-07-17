@@ -45,11 +45,13 @@ with open(sys.argv[1], "rt") as distfile:
 
 		simulation.append(frequencies)
 		frequencies = {}
-		
+
+i = 0
 for step in simulation:
 	chisq, p = chisquare(step.values(), f_exp=stationary.values())
-	print "chisq=" + str(chisq) 
-	results.append(chisq)
+	if chisq < 1000:
+		results.append(chisq)
+	i += 1
 
 results_filtered = results[:]
 
