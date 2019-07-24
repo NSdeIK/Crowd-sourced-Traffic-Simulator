@@ -1,3 +1,5 @@
+# Run example: python chisq_test.py corrected_DIST_10k_1min.txt
+
 import copy
 from scipy.stats import chisquare
 import matplotlib.pyplot as plt
@@ -7,8 +9,6 @@ simulation = []
 frequencies = {}
 stationary = {}
 results = []
-
-print sys.float_info
 
 with open("dict.txt", "rt") as stfile:
 	for stline in stfile:
@@ -21,7 +21,7 @@ with open("dict.txt", "rt") as stfile:
 stationary_minvalue = min(stationary.values())
 
 for key in stationary:
-	stationary[key] += abs(stationary_minvalue) + 0.000000000000001
+	stationary[key] += abs(stationary_minvalue) + 0.00001
 
 print ("Num of streets: " + str(len(stationary)))
 print ("Smallest element: " + str(min(stationary.values())))
@@ -46,16 +46,11 @@ with open(sys.argv[1], "rt") as distfile:
 		simulation.append(frequencies)
 		frequencies = {}
 
-i = 0
 for step in simulation:
 	chisq, p = chisquare(step.values(), f_exp=stationary.values())
-	if chisq < 1000:
-		results.append(chisq)
-	i += 1
+	results.append(chisq)
 
-results_filtered = results[:]
-
-plt.plot(results_filtered)
+plt.plot(results)
 plt.title('Simulation test statistic\n(' + sys.argv[1].split(".")[0] + ')')
 plt.ylabel('Chi-squared test statistic')
 plt.xlabel('Minutes (m)')
