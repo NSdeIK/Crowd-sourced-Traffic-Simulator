@@ -48,10 +48,11 @@ with open(sys.argv[1], "rt") as distfile:
 
 for step in simulation:
 	chisq, p = chisquare(step.values(), f_exp=stationary.values())
+	print chisq
 	results.append(chisq)
 
 plt.plot(results)
-plt.title('Simulation test statistic\n(' + sys.argv[1].split(".")[0] + ')')
+plt.title('Simulation test statistics\n(' + sys.argv[1].split(".")[0] + ')')
 plt.ylabel('Chi-squared test statistic')
 plt.xlabel('Minutes (m)')
 outfile = sys.argv[1].split(".")[0]+".pdf"
