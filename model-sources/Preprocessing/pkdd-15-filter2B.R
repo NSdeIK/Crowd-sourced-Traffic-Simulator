@@ -49,6 +49,9 @@ X[, TS := as_datetime(TIMESTAMP)]
 X[hour(TS) != 8, STATUS := "Deleted"]
 X[, TS := NULL]
 
+# Deleting single point trajectories:
+X[POINTS == 1, STATUS := "Deleted"]
+
 cat("Trajectories unchanged:", X[STATUS == "Unchanged", .N], "\n")
 cat("Trajectories truncated:", X[STATUS == "Truncated", .N], "\n")
 cat("Trajectories deleted:", X[STATUS == "Deleted", .N], "\n")
