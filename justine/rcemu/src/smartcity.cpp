@@ -163,7 +163,7 @@ int main ( int argc, char* argv[] )
   if ( vm.count ( "kernel" ) )
     kernel.assign ( vm["kernel"].as < std::string > () );
   else
-    kernel.assign ( "../porto_adj.edgelist" );
+    kernel.assign ( "../corrected_kernel.edgelist" );
   
   // Do not remove this copyright notice!
   std::cout << "Robocar City Emulator and Robocar World Championship, City Server" << std::endl

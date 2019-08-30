@@ -133,16 +133,31 @@ public:
             #endif
           }
 
-          auto search = kfile.find(source_node);
+          //auto search = kfile.find(source_node);
+
+          kfile[source_node].insert(std::make_pair(neighbor_node, probability));
+/*
           if (search != kfile.end()) {
             kfile[source_node].insert(std::make_pair(neighbor_node, probability));
           } else {
-            std::map<osmium::unsigned_object_id_type, double> temp;
-            temp.insert(std::make_pair(neighbor_node, probability));
-            kfile.insert(std::make_pair(neighbor_node, temp));
-          }
+            if (neighbor_node != source_node){
+              //std::map<osmium::unsigned_object_id_type, double> temp;
+              //temp.insert(std::make_pair(neighbor_node, probability));
+              //kfile.insert(std::make_pair(neighbor_node, temp));
+              kfile[source_node].insert(std::make_pair(neighbor_node, probability));
+            }
+
+          }*/
         }
- 
+
+#ifdef DEBUG
+        for (KernelFile::iterator it = kfile.begin(); it != kfile.end(); it++){
+          std::cout << "Inspecting node: " << it->first << std::endl;
+          for (Neighborlist::iterator node_it = it->second.begin(); node_it != it->second.end(); node_it++)
+            std::cout << "Neighbor ID: " << node_it->first << " transition probability: " << node_it->second << std::endl;
+        }
+#endif
+
         osmium::io::File infile ( osm_file );
         osmium::io::Reader reader ( infile, osmium::osm_entity_bits::all );
 
@@ -367,7 +382,8 @@ public:
 
                 double edge_length = distance ( vertex_old, vertex );
 
-                palist[vertex_old].first.push_back ( edge_length / ratio_for_speed );
+                //palist[vertex_old].first.push_back ( edge_length / ratio_for_speed );
+                palist[vertex_old].first.push_back ( edge_length / 3. );
 
 		            int out_degree = alist[vertex_old].first.size();
 
@@ -410,7 +426,8 @@ public:
 
 		    double edge_length = distance ( vertex_old, vertex );
 
-                    palist[vertex].first.push_back ( edge_length / ratio_for_speed );
+                    //palist[vertex].first.push_back ( edge_length / ratio_for_speed );
+                    palist[vertex].first.push_back ( edge_length / 3. );
 
 		          int out_degree = alist[vertex].first.size();
 		      

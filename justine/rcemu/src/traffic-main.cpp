@@ -90,7 +90,7 @@ int main ( int argc, char* argv[] )
   else
     port.assign ( "10007" );
 
-  int nrcars {5000};
+  int nrcars {20000};
   if ( vm.count ( "nrcars" ) )
     nrcars = vm["nrcars"].as < int > ();
 
@@ -124,7 +124,7 @@ int main ( int argc, char* argv[] )
   if ( vm.count ( "initt" ) )
     initt.assign ( vm["initt"].as < std::string > () );
   else
-    initt.assign ( "NORMAL" );
+    initt.assign ( "DIST" );
 
   justine::robocar::InitType itype;
   if ( initt == "DIST" )

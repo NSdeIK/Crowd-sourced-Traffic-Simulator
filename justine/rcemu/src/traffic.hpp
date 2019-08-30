@@ -321,7 +321,16 @@ public:
   double_vector getProbabilityVector ( osmium::unsigned_object_id_type from ) const
   {
     shm_map_Type::iterator iter=shm_map->find ( from );
-    return iter->second.m_problist;
+    auto prv = iter->second.m_problist;
+
+#ifdef DEBUG
+    int nes = nedges(from);
+    std::cout << "nedges at traffic: " << nes << std::endl;
+    for (int i = 0; i < nes; i++)
+      std::cout << "next node prob at traffic: " << prv.at(i) << std::endl;
+#endif
+
+    return prv;
   }
 
   double getParkingProbability ( osmium::unsigned_object_id_type from ) const

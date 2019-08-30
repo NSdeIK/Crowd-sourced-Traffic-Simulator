@@ -6,7 +6,7 @@ library(sf)
 library(stringr)
 library(tools)
 
-file <- "corrected_DIST_50k_1min.txt"
+file <- "DIST_50k_1min.txt"
 highway_color <- "red"
 min_highway_width <- 0.1
 max_highway_width <- 3
@@ -22,7 +22,7 @@ highways <- extract_osm_objects(key = "highway", bbox = bbox)
 
 lines <- readLines(file)
 
-sapply(lines, function(line) processLine(line)$count) %>% unlist() -> counts
+sapply(1:length(lines), function(lineNumber) processLine(lines[lineNumber])$count) %>% unlist() -> counts
 names(counts) <- NULL
 qplot(counts, geom = "histogram", binwidth = 10)
 
