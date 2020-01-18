@@ -1,5 +1,5 @@
 Robocar World Championship installation and usage notes.
-Tested on Ubuntu 18.04 LTS.
+Tested on Ubuntu 18.04.3 LTS.
 
 Prerequisites
 ====================================
@@ -77,7 +77,7 @@ b) java -jar target/site/justine-car-window-0.0.10-jar-with-dependencies.jar ../
 where ../rcemu/2018-Dec-04\ 20\:13\:15 is the logfile of the last simulation and 1min_file.txt will contain the frequency of cars per streets measured in every minute of the simulation.
 
 ====================================
-Additional usage for testing the model described in paper Markov Stochastic Models for Analyzing Traffic Flow.
+Additional usage for testing the model described in paper Large-scale Analysis and Simulation of Traffic Flow using Markov Models.
 ====================================
 
 1. Preprocessing of the dataset:
@@ -87,14 +87,14 @@ b1) Rscript pkdd-15-filter1.R train.csv
 b2) Rscript pkdd-15-filter2B.R
 b3) Rscript pkdd-15-filter3.R
 2. Create Markov kernel:
-a) Download the map of Porto from OpenStreetMap with the coordinates W8.6518, W8.5771, N41.1129, N41.1756 and save it to the ../model-sources/Markov kernel folder as porto.osm.
-b) Copy the pkdd-15-subset-all.csv file to the Markov kernel folder.
-c) Execute the following from the Markov kernel folder:
+a) Download the map of Porto from OpenStreetMap with the coordinates W8.6518, W8.5771, N41.1129, N41.1756 and save it to the ../model-sources/Markovkernel folder as porto.osm.
+b) Copy the pkdd-15-subset-all.csv file to the Markovkernel folder.
+c) Execute the following from the Markovkernel folder:
 c1) python make_graph_from_osm.py porto.osm pkdd-15-subset-all.csv
 c2) python make_corrected_graph_with_edge.py porto_prob_v2_connected.dot corrected_kernel
 
 3. Run the rcemu with the porto.osm map file and the corrected_kernel.edgelist kernel file. From rcemu (cd rcemu):
-a) src/smartcity --node2gps=../lmap.txt --osm=../porto.osm --city=Porto --node2way=../way.txt --kernel=../../model-sources/Markov \kernel/corrected_kernel.edgelist
+a) src/smartcity --node2gps=../lmap.txt --osm=../porto.osm --city=Porto --node2way=../way.txt --kernel=../../model-sources/Markovkernel/corrected_kernel.edgelist
 b) src/traffic --initt=DIST --minutes=10
 2. From rcwin (cd rcwin)
 e) java -jar target/site/justine-rcwin-0.0.16-jar-with-dependencies.jar ../lmap.txt
@@ -107,6 +107,6 @@ where ../rcemu/2018-Dec-04\ 20\:13\:15 is the logfile of the last simulation and
 5. Statistical analysis:
 a) Copy 1min_file.txt to the model-sources/Statistics folder.
 b) Execute the following in the model-sources/Statistics:
-b1) python calculate_street.py ../Markov\ kernel/corrected_kernel.graphml ../../justine/porto.osm
+b1) python calculate_street.py ../Markovkernel/corrected_kernel.graphml ../../justine/porto.osm
 b2) python chisq_test.py 1min_file.txt 5000
 where 5000 is the number of cars in the simulation.

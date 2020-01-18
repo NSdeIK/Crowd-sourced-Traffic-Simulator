@@ -16,12 +16,15 @@ with open("dict.txt", "rt") as stfile:
 		kvalues = stline.split(", ")
 		for stdata in kvalues:
 			stsplitted = stdata.split("=")
-			stationary[stsplitted[0]] = float(stsplitted[1])
+			if stsplitted[1] != 'nan':
+				stationary[stsplitted[0]] = float(stsplitted[1])
+			else:
+				stationary[stsplitted[0]] = 0
 
 stationary_minvalue = min(stationary.values())
 
 for key in stationary:
-	stationary[key] += abs(stationary_minvalue) + 0.00001
+	stationary[key] += abs(stationary_minvalue) + 0.000001
 
 print ("Num of streets: " + str(len(stationary)))
 print ("Smallest element: " + str(min(stationary.values())))
