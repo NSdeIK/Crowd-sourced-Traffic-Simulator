@@ -1,8 +1,8 @@
 import numpy as np;
 import graph_tool.all as gt
-from scipy.stats import chisquare
+import numpy
 
-#G is a simple road network in Example 2 (see Figure 2)
+#G is a simple road network, see Figure 1
 G = gt.Graph(directed=True)
 
 v1 = G.add_vertex()
@@ -22,32 +22,44 @@ e8 = G.add_edge(v4, v2)
 
 vlen = len(G.get_vertices())
 
-#Figure 2
+#Figure 1
 gt.graph_draw(G, vertex_text=G.vertex_index, vertex_font_size=18,output_size=(800, 800), output="example2.pdf")
 
-#A will be the adjacency matrix of G (4)
+#A will be the adjacency matrix of G
 A = gt.adjacency(G)
 
 with open('log.txt', 'w') as file_w:
-	file_w.write("A= (4)\n")
+	file_w.write("A_G=\n")
 	file_w.write(str(A.todense().transpose()))
 	file_w.write("\n")
 
-#Example 10
-L = gt.laplacian(G, deg='total', normalized=False, weight=None, index=None) # unnormalized Laplace of Example 10
-L = L-A.transpose() #L (46)
+L = gt.laplacian(G, deg='total', normalized=False, weight=None, index=None) # unnormalized Laplace
+L = L-A.transpose() #L
 
 with open('log.txt', 'ab') as file_w:
-	file_w.write("L= (46 left)\n")
+	file_w.write("L=\n")
 	file_w.write(str(L.todense()))
 	file_w.write("\n")
 
-#Linv = np.linalg.pinv(L.todense()) #Moore-Penrose inverse (48)
+S, O = numpy.linalg.eigh(L.todense())
 
-#with open('Linv.txt', 'w') as file_w:
-#	file_w.write(str(Linv))
+with open('log.txt', 'ab') as file_w:
+	file_w.write("S=\n")
+	file_w.write(str(S))
+	file_w.write("\n")
 
-#Example 12
+with open('log.txt', 'ab') as file_w:
+	file_w.write("O=\n")
+	file_w.write(str(O))
+	file_w.write("\n")
+
+L_inv = numpy.linalg.pinv(L.todense())
+
+with open('log.txt', 'ab') as file_w:
+	file_w.write("L_inv=\n")
+	file_w.write(str(L_inv))
+	file_w.write("\n")
+
 N = np.array([[0,250,0,0,0], [450,0,200,150,0], [0,0,0,450,0], 
                [0,200,0,0,300], [0,350,0,0,0]]);  # 2-dimensional frequencies (75)
 
@@ -55,7 +67,7 @@ P_uncorr = np.array([[0,1,0,0,0], [0.5625,0,0.25,0.1875,0], [0,0,0,1,0],
                [0,0.4,0,0,0.6], [0,1,0,0,0]]);	#2-dimensional probabilities (uncorrected)
 
 with open('log.txt', 'ab') as file_w:
-	file_w.write("Example 12\nN= (75)\n")
+	file_w.write("N=\n")
 	file_w.write(str(N))
 	file_w.write("\n")
 
@@ -68,7 +80,7 @@ with open('log.txt', 'ab') as file_w:
 
 #lamb = np.dot(Linv,diff);
 
-lamb = np.linalg.lstsq(L.todense(), diff)
+lamb = np.linalg.lstsq(L.todense(), diff, rcond=None)
 lamb = lamb[0]
 
 with open('log.txt', 'ab') as file_w:
@@ -95,7 +107,7 @@ with open('log.txt', 'ab') as file_w:
 Qdist = Q/(sum(Q).sum());  # 2-dimensional stationary distribution
 
 with open('log.txt', 'ab') as file_w:
-	file_w.write("Q=\n")
+	file_w.write("Q_WLS=\n")
 	file_w.write(str(Qdist))
 	file_w.write("\n")
 
@@ -109,56 +121,13 @@ with open('log.txt', 'ab') as file_w:
 P = np.transpose(np.divide(np.transpose(Qdist),pi));
 
 with open('log.txt', 'ab') as file_w:
-	file_w.write("P=\n")
+	file_w.write("P_WLS=\n")
 	file_w.write(str(P))
 	file_w.write("\n")
 
-stationary = []
-for i in range(Qdist.size):
-	if Qdist.item(i) != 0:
-		stationary.append(Qdist.item(i))
-
 with open('log.txt', 'ab') as file_w:
-	file_w.write("Stationary distribution on edges=\n")
-	file_w.write(str(stationary))
+	file_w.write("P_ML=\n")
+	file_w.write(str(P_uncorr))
 	file_w.write("\n")
 
-measurement_a = [4,4,4,2,4,2,4,4]
-
-with open('log.txt', 'ab') as file_w:
-	file_w.write("measurement_a=\n")
-	file_w.write(str(measurement_a))
-	file_w.write("\n")
-
-norm_a = [float(i)/sum(measurement_a) for i in measurement_a]
-
-with open('log.txt', 'ab') as file_w:
-	file_w.write("norm_a=\n")
-	file_w.write(str(norm_a))
-	file_w.write("\n")
-
-measurement_b = [6,12,1,14,51,22,12,17]
-
-with open('log.txt', 'ab') as file_w:
-	file_w.write("measurement_b=\n")
-	file_w.write(str(measurement_b))
-	file_w.write("\n")
-
-norm_b = [float(i)/sum(measurement_b) for i in measurement_b]
-
-with open('log.txt', 'ab') as file_w:
-	file_w.write("norm_b=\n")
-	file_w.write(str(norm_b))
-	file_w.write("\n")
-
-chisq_a, p_a = chisquare(norm_a, f_exp=stationary)
-
-with open('log.txt', 'ab') as file_w:
-	file_w.write("Statistics for norm_a: " + str(chisq_a) + " " + str(p_a))	
-	file_w.write("\n")
-
-chisq_b, p_b = chisquare(norm_b, f_exp=stationary)
-
-with open('log.txt', 'ab') as file_w:
-	file_w.write("Statistics for norm_b: " + str(chisq_b) + " " + str(p_b))
-	file_w.write("\n")
+print "Calculation done. See log.txt for results."
