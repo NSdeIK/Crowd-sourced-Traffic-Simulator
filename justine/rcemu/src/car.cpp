@@ -358,9 +358,8 @@ void justine::robocar::Car::step()
     }
   else
     {
-
       // car stopped
-
+      traffic.car_stopped(m_from, m_to);
     }
 }
 

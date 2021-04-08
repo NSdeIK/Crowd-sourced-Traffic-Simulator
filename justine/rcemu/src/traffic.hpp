@@ -458,6 +458,31 @@ public:
     return m_time;
   }
 
+   void car_stopped(long unsigned int x1, long unsigned int x2)
+  {
+    for(auto kocsi : cars)
+    {
+      if(kocsi->from() == x1 && kocsi->to() == x2)
+        {
+          //std::cout << "Check: " << x1 << std::endl;
+          //std::cout << "Megállt az autó címe: " << kocsi << " - Mérete: [" << cars.size() << "]" << std::endl;
+
+          cars.erase(std::find(cars.begin(),cars.end()-1, kocsi)); 
+
+          //std::cout << "Törölve - Mérete[" << cars.size() << "]" << std::endl;
+
+          if ( m_type == TrafficType::NORMAL )
+          {
+            std::shared_ptr<Car> car ( new Car {*this} );
+            car->init(); 
+            cars.push_back ( car ); 
+          }
+
+          //std::cout << "Új autó - Mérete[" << cars.size() << "]" << std::endl;
+        }
+    }
+  }
+
 protected:
 
   boost::interprocess::managed_shared_memory *segment;
