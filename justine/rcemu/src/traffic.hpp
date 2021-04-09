@@ -254,15 +254,16 @@ public:
 
     pursuit();
 
+    car_stopped_erase();
+    car_random_spawn_time();
+
     steps();
 
   }
 
   void steps()
   {
-
     std::lock_guard<std::mutex> lock ( cars_mutex );
-
     *logFile <<
              m_time <<
              " " <<
@@ -458,30 +459,77 @@ public:
     return m_time;
   }
 
+
    void car_stopped(long unsigned int x1, long unsigned int x2)
-  {
+  {   
     for(auto kocsi : cars)
     {
       if(kocsi->from() == x1 && kocsi->to() == x2)
         {
           //std::cout << "Check: " << x1 << std::endl;
-          //std::cout << "Megállt az autó címe: " << kocsi << " - Mérete: [" << cars.size() << "]" << std::endl;
 
-          cars.erase(std::find(cars.begin(),cars.end()-1, kocsi)); 
+          auto car_to_erase = std::find(cars.begin(),cars.end(), kocsi); 
 
-          //std::cout << "Törölve - Mérete[" << cars.size() << "]" << std::endl;
-
-          if ( m_type == TrafficType::NORMAL )
+          if (car_to_erase != cars.end())
           {
-            std::shared_ptr<Car> car ( new Car {*this} );
-            car->init(); 
-            cars.push_back ( car ); 
+            cars_erase.push_back(*car_to_erase);
+            break;
           }
-
-          //std::cout << "Új autó - Mérete[" << cars.size() << "]" << std::endl;
         }
     }
   }
+
+  void car_stopped_erase()
+  {
+    if(!cars_erase.empty())
+    {
+      sort(cars_erase.begin(),cars_erase.end());
+      auto iter = unique(cars_erase.begin(),cars_erase.end());
+      cars_erase.erase(iter, cars_erase.end());
+
+      for(auto kocsi2 : cars_erase)
+      {
+        auto car_to_erase = std::find(cars.begin(),cars.end(), kocsi2); 
+        auto car_to_erase2 = std::find(cars_erase.begin(),cars_erase.end(), kocsi2); 
+
+        if(car_to_erase != cars.end())
+        {
+          //std::cout << "Megállt az autó címe: " << *car_to_erase << " - Mérete: [" << cars.size() << "]" << std::endl;
+          cars.erase(car_to_erase);
+          //std::cout << "Törölve[ " << *car_to_erase2 << " ]  - Mérete[" << cars.size() << "]" << std::endl;
+
+          if(car_to_erase2 != cars.end())
+          {
+            cars_erase.erase(car_to_erase2);
+          }
+        }
+      }
+    }
+    else
+    {
+      ;
+    }
+  }
+
+  void car_random_spawn_time()
+  {
+    if(cars.size() < m_size)
+    {
+      int random_number = rand() % 100 + 1;
+
+      if(random_number > 95)
+      {
+        if ( m_type == TrafficType::NORMAL )
+        {
+          std::shared_ptr<Car> car ( new Car {*this} );
+          car->init(); 
+          cars.push_back ( car ); 
+          //std::cout << "Random kocsi létrejötte - Time: " << m_time << std::endl;
+        }
+      }
+    }
+  }
+
 
 protected:
 
@@ -505,11 +553,13 @@ protected:
   std::thread m_thread {&Traffic::processes, this};
 
   std::vector<std::shared_ptr<Car>> cars;
+  std::vector<std::shared_ptr<Car>> cars_erase;
   std::vector<std::shared_ptr<SmartCar>> m_smart_cars;
   std::vector<std::shared_ptr<CopCar>> m_cop_cars;
   std::map<int, std::shared_ptr<SmartCar>> m_smart_cars_map;
 
   std::mutex cars_mutex;
+
 
 
   std::fstream* logFile;
